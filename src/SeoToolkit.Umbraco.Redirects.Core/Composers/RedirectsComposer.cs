@@ -34,13 +34,13 @@ namespace SeoToolkit.Umbraco.Redirects.Core.Composers
             if (disabledModules.Contains(DisabledModuleConstant.All))
             {
                 builder.Components().Append<DisableModuleComponent>();
-                builder.Trees().RemoveTreeController<RedirectsTreeController>();
+                //builder.Trees().RemoveTreeController<RedirectsTreeController>();
                 return;
             }
 
             if (disabledModules.Contains(DisabledModuleConstant.SectionTree))
             {
-                builder.Trees().RemoveTreeController<RedirectsTreeController>();
+                //builder.Trees().RemoveTreeController<RedirectsTreeController>();
             }
 
             builder.Components().Append<EnableModuleComponent>();

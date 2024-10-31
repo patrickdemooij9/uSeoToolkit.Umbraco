@@ -6,44 +6,46 @@ using Microsoft.AspNetCore.Mvc;
 using SeoToolkit.Umbraco.Redirects.Core.Constants;
 using SeoToolkit.Umbraco.Redirects.Core.Enumerators;
 using SeoToolkit.Umbraco.Redirects.Core.Helpers;
-using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Web;
-using Umbraco.Cms.Web.BackOffice.Controllers;
-using Umbraco.Cms.Web.Common.Attributes;
 using SeoToolkit.Umbraco.Redirects.Core.Interfaces;
 using SeoToolkit.Umbraco.Redirects.Core.Models.Business;
 using SeoToolkit.Umbraco.Redirects.Core.Models.PostModels;
 using SeoToolkit.Umbraco.Redirects.Core.Models.ViewModels;
 using Umbraco.Cms.Core.Security;
 using Umbraco.Extensions;
+using SeoToolkit.Umbraco.Common.Core.Controllers;
+using Umbraco.Cms.Web.Common.Routing;
+using Umbraco.Cms.Api.Common.ViewModels.Pagination;
+using System.Threading.Tasks;
 
 namespace SeoToolkit.Umbraco.Redirects.Core.Controllers
 {
-    [PluginController("SeoToolkit")]
-    public class RedirectsController : UmbracoAuthorizedApiController
+    [ApiExplorerSettings(GroupName = "seoToolkitRedirects")]
+    [BackOfficeRoute("seoToolkitRedirects")]
+    public class RedirectsController : SeoToolkitControllerBase
     {
         private readonly IRedirectsService _redirectsService;
         private readonly IUmbracoContextFactory _umbracoContextFactory;
-        private readonly ILocalizationService _localizationService;
+        private readonly ILanguageService _languageService;
         private readonly IBackOfficeSecurityAccessor _backOfficeSecurityAccessor;
         private readonly RedirectsImportHelper _redirectsImportHelper;
 
 
         public RedirectsController(IRedirectsService redirectsService,
             IUmbracoContextFactory umbracoContextFactory,
-            ILocalizationService localizationService,
+            ILanguageService languageService,
             IBackOfficeSecurityAccessor backOfficeSecurityAccessor, RedirectsImportHelper redirectsImportHelper)
         {
             _redirectsService = redirectsService;
             _umbracoContextFactory = umbracoContextFactory;
-            _localizationService = localizationService;
+            _languageService = languageService;
             _backOfficeSecurityAccessor = backOfficeSecurityAccessor;
             _redirectsImportHelper = redirectsImportHelper;
         }
 
-        [HttpPost]
-        public IActionResult Save(SaveRedirectPostModel postModel)
+        [HttpPost("redirect")]
+        public async Task<IActionResult> Save(SaveRedirectPostModel postModel)
         {
             using var ctx = _umbracoContextFactory.EnsureUmbracoContext();
 
@@ -77,7 +79,8 @@ namespace SeoToolkit.Umbraco.Redirects.Core.Controllers
 
             if (postModel.NewCultureId != null)
             {
-                redirect.NewNodeCulture = _localizationService.GetLanguageById(postModel.NewCultureId.Value);
+                var languages = await _languageService.GetAllAsync();
+                redirect.NewNodeCulture = languages.FirstOrDefault(it => it.Id == postModel.NewCultureId);
                 if (redirect.NewNodeCulture is null)
                     return new BadRequestResult();
             }
@@ -96,6 +99,8 @@ namespace SeoToolkit.Umbraco.Redirects.Core.Controllers
             return Ok();
         }
 
+        [HttpGet("redirects")]
+        [ProducesResponseType(typeof(PagedViewModel<RedirectViewModel>), 200)]
         public IActionResult GetAll(int pageNumber, int pageSize, string orderBy = null, string orderDirection = null, string search = "")
         {
             var redirectsPaged = _redirectsService.GetAll(pageNumber, pageSize, orderBy, orderDirection, search);
@@ -104,20 +109,13 @@ namespace SeoToolkit.Umbraco.Redirects.Core.Controllers
                 var domain = it.Domain?.Name ?? it.CustomDomain;
                 if (domain?.StartsWith("/") is true)
                     domain = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}{domain}";
-                return new RedirectListViewModel
-                {
-                    Id = it.Id,
-                    IsEnabled = it.IsEnabled,
-                    OldUrl = it.OldUrl.IfNullOrWhiteSpace("/"),
-                    NewUrl = it.GetNewUrl(),
-                    Domain = domain,
-                    StatusCode = it.RedirectCode,
-                    LastUpdated = it.LastUpdated.ToShortDateString()
-                };
+                return new RedirectViewModel(it);
             });
-            return Ok(new PagedResult<RedirectListViewModel>(redirectsPaged.TotalItems, pageNumber, pageSize) { Items = viewModels });
+            return Ok(new PagedViewModel<RedirectViewModel>() { Total = redirectsPaged.TotalItems, Items = viewModels });
         }
 
+        [HttpGet("redirect")]
+        [ProducesResponseType(typeof(RedirectViewModel), 200)]
         public IActionResult Get(int id)
         {
             var redirect = _redirectsService.Get(id);
@@ -126,24 +124,26 @@ namespace SeoToolkit.Umbraco.Redirects.Core.Controllers
             return Ok(new RedirectViewModel(redirect));
         }
 
+        [HttpGet("domains")]
+        [ProducesResponseType(typeof(DomainViewModel), 200)]
         public IActionResult GetDomains()
         {
             using var ctx = _umbracoContextFactory.EnsureUmbracoContext();
-            return Ok(ctx.UmbracoContext.Domains.GetAll(false).Select(it => new
+            return Ok(ctx.UmbracoContext.Domains.GetAll(false).Select(it => new DomainViewModel
             {
                 Id = it.Id,
                 Name = it.Name.StartsWith("/") ? $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}{it.Name}" : it.Name
             }));
         }
 
-        [HttpPost]
+        [HttpDelete("redirect")]
         public IActionResult Delete(DeleteRedirectsPostModel postModel)
         {
             _redirectsService.Delete(postModel.Ids);
-            return GetAll(1, 20);
+            return Ok();
         }
 
-        [HttpPost]
+        [HttpPost("validate")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
@@ -172,6 +172,7 @@ namespace SeoToolkit.Umbraco.Redirects.Core.Controllers
             return UnprocessableEntity(!string.IsNullOrWhiteSpace(result.Status) ? result.Status : "Something went wrong during the validation");
         }
 
+        [HttpPost("import")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]

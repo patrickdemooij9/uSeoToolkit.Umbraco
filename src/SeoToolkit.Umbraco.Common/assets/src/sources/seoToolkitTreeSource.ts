@@ -2,7 +2,7 @@ import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { NamedEntityTreeItemResponseModel } from "@umbraco-cms/backoffice/external/backend-api";
 import { UmbTreeAncestorsOfRequestArgs, UmbTreeChildrenOfRequestArgs, UmbTreeServerDataSourceBase } from "@umbraco-cms/backoffice/tree";
 import { SeoToolkitService } from "../api";
-import { SEOTOOLKIT_MODULE_ENTITY, SEOTOOLKIT_ROBOTSTXT_ENTITY, SEOTOOLKIT_SCRIPTMANAGER_ENTITY, SEOTOOLKIT_TREE_ROOT } from "../constants/seoToolkitConstants";
+import { SEOTOOLKIT_MODULE_ENTITY, SEOTOOLKIT_REDIRECT_ENTITY, SEOTOOLKIT_ROBOTSTXT_ENTITY, SEOTOOLKIT_SCRIPTMANAGER_ENTITY, SEOTOOLKIT_TREE_ROOT } from "../constants/seoToolkitConstants";
 import { SeoToolkitTreeItemModel } from "../trees/types";
 
 export class seoToolkitTreeSource extends UmbTreeServerDataSourceBase<NamedEntityTreeItemResponseModel, SeoToolkitTreeItemModel> {
@@ -51,6 +51,10 @@ const mapper = (item: NamedEntityTreeItemResponseModel): SeoToolkitTreeItemModel
 		case '94E95F4A-2ECB-4038-BCFD-8357B7C41F1A'.toLowerCase():
 			entity = SEOTOOLKIT_SCRIPTMANAGER_ENTITY;
 			icon = 'icon-script';
+			break;
+		case '1147F58D-D2D5-425B-AEDE-DB537BDAC9EF'.toLowerCase():
+			entity = SEOTOOLKIT_REDIRECT_ENTITY;
+			icon = 'icon-trafic';
 			break;
 		default:
 			entity = SEOTOOLKIT_MODULE_ENTITY;

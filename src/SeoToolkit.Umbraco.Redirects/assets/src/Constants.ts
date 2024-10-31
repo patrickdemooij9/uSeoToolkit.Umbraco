@@ -1,0 +1,1 @@
+export const SEOTOOLKIT_REDIRECT_ENTITY = "seoToolkit-redirect";

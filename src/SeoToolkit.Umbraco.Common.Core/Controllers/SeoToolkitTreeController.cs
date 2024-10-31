@@ -21,6 +21,7 @@ namespace SeoToolkit.Umbraco.Common.Core.Controllers
         private Guid _infoGuid = new Guid("CDF429D1-2380-4AC2-AC3E-22D619EE4529");
         private Guid _robotsGuid = new Guid("20A2086E-7D72-44BA-B97B-5836CAF6E28E");
         private Guid _scriptManagerGuid = new Guid("94E95F4A-2ECB-4038-BCFD-8357B7C41F1A");
+        private Guid _redirectsGuid = new Guid("1147F58D-D2D5-425B-AEDE-DB537BDAC9EF");
 
         [HttpGet("root")]
         [ProducesResponseType(typeof(PagedViewModel<NamedEntityTreeItemResponseModel>), StatusCodes.Status200OK)]
@@ -36,6 +37,9 @@ namespace SeoToolkit.Umbraco.Common.Core.Controllers
             }, new NamedEntityTreeItemResponseModel{
                 Id = _scriptManagerGuid,
                 Name = "Script Manager"
+            }, new NamedEntityTreeItemResponseModel{
+                Id = _redirectsGuid,
+                Name = "Redirects",
             } };
             var result = new PagedViewModel<NamedEntityTreeItemResponseModel>()
             {
