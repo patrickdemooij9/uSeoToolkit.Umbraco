@@ -46,7 +46,7 @@ namespace SeoToolkit.Umbraco.Redirects.Core.Services
             var oldUrl = redirect.IsRegex ? redirect.OldUrl : redirect.OldUrl.CleanUrl();
             var newUrl = redirect.NewUrl;
 
-            if (!redirect.IsRegex && !Uri.IsWellFormedUriString(redirect.OldUrl, UriKind.Relative))
+            if (!redirect.IsRegex && (!Uri.IsWellFormedUriString(redirect.OldUrl, UriKind.Relative) || !redirect.OldUrl.StartsWith("http")))
                 oldUrl = redirect.OldUrl.EnsureStartsWith("/");
 
             if (redirect.NewNode is null)

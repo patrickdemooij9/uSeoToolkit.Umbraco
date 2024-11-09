@@ -1,6 +1,6 @@
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { UmbDataSourceResponse } from "@umbraco-cms/backoffice/repository";
-import { GetUmbracoSeoToolkitRedirectsRedirectsResponse, SeoToolkitRedirectsService } from "../api";
+import { GetUmbracoSeoToolkitRedirectsRedirectsResponse, SaveRedirectPostModel, SeoToolkitRedirectsService } from "../api";
 import { tryExecuteAndNotify } from '@umbraco-cms/backoffice/resources';
 
 export class RedirectSource {
@@ -19,5 +19,15 @@ export class RedirectSource {
             orderDirection,
             search
         }));
-    } 
+    };
+
+    async save(redirect: SaveRedirectPostModel){
+        await tryExecuteAndNotify(this.#host, SeoToolkitRedirectsService.postUmbracoSeoToolkitRedirectsRedirect({
+            requestBody: redirect
+        }));
+    };
+
+    async getDomains(){
+        return await tryExecuteAndNotify(this.#host, SeoToolkitRedirectsService.getUmbracoSeoToolkitRedirectsDomains());
+    }
 }

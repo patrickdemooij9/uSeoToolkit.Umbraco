@@ -18,9 +18,9 @@ namespace SeoToolkit.Umbraco.Redirects.Core.Models.PostModels
         
         public string NewUrl { get; set; }
         
-        public int? NewNodeId { get; set; }
+        public Guid? NewNodeId { get; set; }
         
-        public int? NewCultureId { get; set; }
+        public string NewCultureId { get; set; }
         
         public int RedirectCode { get; set; }
     }

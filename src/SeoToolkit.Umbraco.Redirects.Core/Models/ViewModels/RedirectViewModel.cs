@@ -1,4 +1,5 @@
 ﻿using SeoToolkit.Umbraco.Redirects.Core.Models.Business;
+using System;
 using Umbraco.Extensions;
 
 namespace SeoToolkit.Umbraco.Redirects.Core.Models.ViewModels
@@ -19,9 +20,9 @@ namespace SeoToolkit.Umbraco.Redirects.Core.Models.ViewModels
 
         public string NewUrl { get; set; }
 
-        public int? NewNodeId { get; set; }
+        public Guid? NewNodeId { get; set; }
 
-        public int? NewCultureId { get; set; }
+        public string NewCulture { get; set; }
 
         public int RedirectCode { get; set; }
 
@@ -34,8 +35,8 @@ namespace SeoToolkit.Umbraco.Redirects.Core.Models.ViewModels
             IsRegex = redirect.IsRegex;
             OldUrl = redirect.OldUrl.IfNullOrWhiteSpace("/");
             NewUrl = redirect.NewUrl;
-            NewNodeId = redirect.NewNode?.Id;
-            NewCultureId = redirect.NewNodeCulture?.Id;
+            NewNodeId = redirect.NewNode?.Key;
+            NewCulture = redirect.NewNodeCulture?.IsoCode;
             RedirectCode = redirect.RedirectCode;
         }
     }

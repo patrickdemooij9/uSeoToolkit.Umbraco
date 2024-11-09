@@ -5,6 +5,8 @@ import { UmbControllerBase } from "@umbraco-cms/backoffice/class-api";
 import { Redirect } from "../models/Redirect";
 import { SEOTOOLKIT_REDIRECT_ENTITY } from "../Constants";
 import { UMB_MODAL_MANAGER_CONTEXT } from "@umbraco-cms/backoffice/modal";
+import RedirectRepository from "../dataLayer/RedirectRepository";
+import { RedirectModalData } from "../models/RedirectModalData";
 
 export default class RedirectModuleContext extends UmbDefaultCollectionContext<Redirect, any> {
     workspaceAlias = 'seoToolkit.collections.redirects';
@@ -16,8 +18,8 @@ export default class RedirectModuleContext extends UmbDefaultCollectionContext<R
     }
 
     openCreateModal() {
-        this.consumeContext(UMB_MODAL_MANAGER_CONTEXT, (instance) => {
-            instance.open(this._host, 'seoToolkit.modal.redirect.create', {
+        this.consumeContext(UMB_MODAL_MANAGER_CONTEXT, async (instance) => {
+            const modal = instance.open(this._host, 'seoToolkit.modal.redirect.create', {
                 modal: { type: 'sidebar', size: 'medium' },
                 data: {
                     redirect: {
@@ -26,6 +28,25 @@ export default class RedirectModuleContext extends UmbDefaultCollectionContext<R
                     }
                 }
             });
+
+            await modal.onSubmit();
+
+            const data = (modal.getValue() as RedirectModalData).redirect;
+            
+            await new RedirectRepository(this).save({
+                id: 0,
+                domain: data.domain,
+                customDomain: '',
+                isEnabled: data.isEnabled,
+                isRegex: data.isRegex,
+                oldUrl: data.oldUrl,
+                newUrl: data.newUrl,
+                newNodeId: data.newNodeId,
+                newCultureId: data.newCultureIso,
+                redirectCode: 301
+            });
+
+            this.requestCollection();
         })
     }
 

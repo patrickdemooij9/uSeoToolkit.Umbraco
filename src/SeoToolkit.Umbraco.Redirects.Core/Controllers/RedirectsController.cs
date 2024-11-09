@@ -77,10 +77,10 @@ namespace SeoToolkit.Umbraco.Redirects.Core.Controllers
                     return new BadRequestResult();
             }
 
-            if (postModel.NewCultureId != null)
+            if (string.IsNullOrWhiteSpace(postModel.NewCultureId))
             {
                 var languages = await _languageService.GetAllAsync();
-                redirect.NewNodeCulture = languages.FirstOrDefault(it => it.Id == postModel.NewCultureId);
+                redirect.NewNodeCulture = languages.FirstOrDefault(it => it.IsoCode == postModel.NewCultureId);
                 if (redirect.NewNodeCulture is null)
                     return new BadRequestResult();
             }
@@ -125,7 +125,7 @@ namespace SeoToolkit.Umbraco.Redirects.Core.Controllers
         }
 
         [HttpGet("domains")]
-        [ProducesResponseType(typeof(DomainViewModel), 200)]
+        [ProducesResponseType(typeof(DomainViewModel[]), 200)]
         public IActionResult GetDomains()
         {
             using var ctx = _umbracoContextFactory.EnsureUmbracoContext();

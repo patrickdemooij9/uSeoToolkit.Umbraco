@@ -6,8 +6,8 @@ export interface Redirect {
     domain?: number | null;
     oldUrl?: string | null;
     newUrl?: string | null;
-    newNodeId?: number | null;
-    newCultureId?: number | null;
+    newNodeId?: string | null;
+    newCultureIso?: string | null;
     statusCode: number;
     lastUpdated?: (string) | null;
 }

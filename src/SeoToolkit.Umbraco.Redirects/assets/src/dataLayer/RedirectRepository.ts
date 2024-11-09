@@ -3,6 +3,7 @@ import { UmbPagedModel, UmbRepositoryBase, UmbRepositoryResponse } from "@umbrac
 import { RedirectSource } from "./RedirectSource";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { Redirect } from "../models/Redirect";
+import { SaveRedirectPostModel } from "../api";
 
 export default class RedirectRepository extends UmbRepositoryBase implements UmbCollectionRepository
 {
@@ -31,4 +32,11 @@ export default class RedirectRepository extends UmbRepositoryBase implements Umb
         return result;
     }
     
+    async save(redirect: SaveRedirectPostModel){
+        await this.#source.save(redirect);
+    }
+    
+    async getDomains(){
+        return await this.#source.getDomains();
+    }
 }

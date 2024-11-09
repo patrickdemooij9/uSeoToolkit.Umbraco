@@ -203,13 +203,12 @@ export const RedirectViewModelSchema = {
             nullable: true
         },
         newNodeId: {
-            type: 'integer',
-            format: 'int32',
+            type: 'string',
+            format: 'uuid',
             nullable: true
         },
-        newCultureId: {
-            type: 'integer',
-            format: 'int32',
+        newCulture: {
+            type: 'string',
             nullable: true
         },
         redirectCode: {
@@ -319,13 +318,12 @@ export const SaveRedirectPostModelSchema = {
             nullable: true
         },
         newNodeId: {
-            type: 'integer',
-            format: 'int32',
+            type: 'string',
+            format: 'uuid',
             nullable: true
         },
         newCultureId: {
-            type: 'integer',
-            format: 'int32',
+            type: 'string',
             nullable: true
         },
         redirectCode: {

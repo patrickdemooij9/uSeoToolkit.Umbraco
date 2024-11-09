@@ -4,37 +4,47 @@ import { RedirectModalData } from "../models/RedirectModalData";
 import { Redirect } from "../models/Redirect";
 import { UmbPropertyDatasetElement, UmbPropertyValueData } from "@umbraco-cms/backoffice/property";
 import { UmbObjectState } from "@umbraco-cms/backoffice/observable-api";
-import { UmbPropertyTypeAppearanceModel } from "@umbraco-cms/backoffice/content-type";
 import { UUIInputEvent, UUISelectEvent } from "@umbraco-cms/backoffice/external/uui";
 import { RedirectLinkType } from "../types/RedirectLinkType";
 import { RedirectSelectLinkData } from "../models/RedirectSelectLinkData";
+import { UmbDocumentDetailRepository } from "@umbraco-cms/backoffice/document";
+import RedirectRepository from "../dataLayer/RedirectRepository";
+import { DomainViewModel } from "../api";
 
 @customElement("st-create-redirect-modal")
 export default class CreateRedirectModal extends UmbModalBaseElement<RedirectModalData, RedirectModalData> {
 
+    #documentRepository = new UmbDocumentDetailRepository(this);
+    #redirectRepository = new RedirectRepository(this);
     #options: Array<Option> = [];
     #oldUrl?: string;
-    #newUrlData?: RedirectSelectLinkData;
 
     @state()
     redirect?: UmbObjectState<Redirect>
 
     @state()
+    newUrlName?: string;
+
+    @state()
+    domains: Array<DomainViewModel> = [];
+
+    @state()
     _content: UmbPropertyValueData[] = [];
 
-    propertyAppearance: UmbPropertyTypeAppearanceModel = {
-        labelOnTop: true
-    };
-
-    override connectedCallback(): void {
+    override async connectedCallback() {
         super.connectedCallback();
+
+        this.domains = (await this.#redirectRepository.getDomains()).data!
+        this.domains.splice(0, 0, { id: 0, name: "All Sites" });
+        this.domains.push({ id: -1, name: "Custom Domain" });
 
         this.redirect = new UmbObjectState(this.data!.redirect);
         this.observe(this.redirect.asObservable(), (value) => {
+            const domainName = this.domains.find((d) => d.id === value.domain)?.name ?? this.domains[0].name
             this._content = [
                 {
                     alias: 'domain',
-                    value: value.domain
+                    value: [domainName]
                 },
                 {
                     alias: 'isEnabled',
@@ -63,23 +73,15 @@ export default class CreateRedirectModal extends UmbModalBaseElement<RedirectMod
             ];
             this.#oldUrl = value.oldUrl ?? '';
 
+            console.log(this.redirect?.getValue().newNodeId);
             if (value.newUrl || value.newNodeId) {
-                let linkType = undefined;
                 if (value.newUrl) {
-                    linkType = RedirectLinkType.Url;
+                    this.newUrlName = value.newUrl;
+                } else {
+                    this.#documentRepository.requestByUnique(value.newNodeId!).then((resp) => {
+                        this.newUrlName = resp.data?.urls.find((u) => u.culture === value.newCultureIso)?.url;
+                    });
                 }
-                if (value.newNodeId) {
-                    if (value.newCultureId) {
-                        linkType = RedirectLinkType.Content;
-                    } else {
-                        linkType = RedirectLinkType.Media;
-                    }
-                }
-                this.#newUrlData = {
-                    linkType: linkType,
-                    culture: value.newCultureId ?? undefined,
-                    value: linkType === RedirectLinkType.Url ? value.newUrl! : value.newNodeId!.toString()
-                };
             }
         });
     }
@@ -87,10 +89,22 @@ export default class CreateRedirectModal extends UmbModalBaseElement<RedirectMod
     #onPropertyDataChange(e: Event) {
         const value = (e.target as UmbPropertyDatasetElement).value;
 
-        const newValue = value.find((item) => item.alias === 'robotsTxt')?.value as string;
-        if (newValue) {
-            //this.#context?.setContent(newValue);
-        }
+        const newValue = {} as any;
+        const modelKeys = Object.keys(this.redirect!.getValue());
+        value.forEach((item) => {
+            if (item.alias === 'domain') {
+                const domainId = this.domains.find((d) => d.name === (item.value as string[])[0])?.id;
+                newValue["domain"] = domainId
+            }
+            else if (modelKeys.includes(item.alias)) {
+                if (Array.isArray(item.value)) {
+                    newValue[item.alias] = item.value[0];
+                } else {
+                    newValue[item.alias] = item.value;
+                }
+            }
+        });
+        this.redirect?.update(newValue);
     }
 
     #onRegexOptionChange(e: UUISelectEvent) {
@@ -107,20 +121,32 @@ export default class CreateRedirectModal extends UmbModalBaseElement<RedirectMod
 
     #onSetLinkClick() {
         this.consumeContext(UMB_MODAL_MANAGER_CONTEXT, async (instance) => {
+            let linkType = RedirectLinkType.Url;
+            if (this.redirect?.value.newNodeId) {
+                linkType = this.redirect.value.newCultureIso ? RedirectLinkType.Content : RedirectLinkType.Media;
+            }
             const modal = instance.open(this, 'seoToolkit.modal.redirect.link', {
                 modal: { type: 'sidebar', size: 'medium' },
                 data: {
-                    linkType: RedirectLinkType.Url,
-                    culture: '',
-                    value: '',
+                    linkType: linkType,
+                    culture: this.redirect?.value.newCultureIso,
+                    url: this.redirect?.value.newUrl,
+                    contentKey: (linkType === RedirectLinkType.Content) ? this.redirect?.value.newNodeId : undefined,
+                    mediaKey: (linkType === RedirectLinkType.Media) ? this.redirect?.value.newNodeId : undefined
                 }
             });
             await modal.onSubmit();
             const value = modal.getValue() as RedirectSelectLinkData;
+            console.log(value);
+
+            let newNodeId = undefined;
+            if (value.linkType !== RedirectLinkType.Url) {
+                newNodeId = value.linkType === RedirectLinkType.Content ? value.contentKey! : value.mediaKey!;
+            }
             this.redirect?.update({
-                newUrl: value.linkType === RedirectLinkType.Url ? value.value : undefined,
-                newCultureId: value.culture,
-                newNodeId: value.linkType !== RedirectLinkType.Url ? Number.parseInt(value.value) : undefined
+                newUrl: value.linkType === RedirectLinkType.Url ? value.url : undefined,
+                newCultureIso: value.culture,
+                newNodeId: newNodeId
             });
         })
     }
@@ -130,6 +156,12 @@ export default class CreateRedirectModal extends UmbModalBaseElement<RedirectMod
     }
 
     #handleSubmit() {
+        this.value = {
+            redirect: {
+                ...this.redirect!.value,
+                domain: this.redirect?.value.domain && this.redirect.value.domain <= 0 ? null : this.redirect?.value.domain
+            }
+        };
         this.modalContext?.submit();
     }
 
@@ -147,10 +179,9 @@ export default class CreateRedirectModal extends UmbModalBaseElement<RedirectMod
                             property-editor-ui-alias='Umb.PropertyEditorUi.Dropdown'
                             val
                             required
-                            .appearance=${this.propertyAppearance}
                             .config=${[{
                 alias: 'items',
-                value: ['All Sites', 'test2']
+                value: this.domains.map(item => item.name)
             }]}>
                         </umb-property>
                         <umb-property 
@@ -158,13 +189,11 @@ export default class CreateRedirectModal extends UmbModalBaseElement<RedirectMod
                             label='Enabled'
                             description='Uncheck this box to stop the redirect from functioning'
                             property-editor-ui-alias='Umb.PropertyEditorUi.Toggle'
-                            val
-                            .appearance=${this.propertyAppearance}>
+                            val>
                         </umb-property>
                         <umb-property-layout 
                             label="From url"
-                            description="Relative url of where the redirect starts"
-                            orientation="vertical">
+                            description="Relative url of where the redirect starts">
                             <div slot="editor">
                                 <uui-input
                                     .value=${this.#oldUrl}
@@ -178,14 +207,16 @@ export default class CreateRedirectModal extends UmbModalBaseElement<RedirectMod
                         </umb-property-layout>
                         <umb-property-layout
                             label="New Url"
-                            description="The url where the redirect is going to"
-                            orientation="vertical">
+                            description="The url where the redirect is going to">
                             <div slot="editor">
-                                <uui-button  look="placeholder" @click=${this.#onSetLinkClick}>
-                                    <span>Set link</span>
-                                </uui-button>
-                                ${when(this.#newUrlData?.linkType === RedirectLinkType.Url, () => html`
-                                    <p>This is an url</p>
+                                ${when(!this.redirect?.value.newUrl && !this.redirect?.value.newNodeId, () => html`
+                                    <uui-button look="placeholder" @click=${this.#onSetLinkClick}>
+                                        <span>Set link</span>
+                                    </uui-button>
+                                `, () => html`
+                                    <uui-button look="outline" @click=${this.#onSetLinkClick}>
+                                        <span>${this.newUrlName}</span>
+                                    </uui-button>
                                 `)}
                             </div>
                         </umb-property-layout>
@@ -195,7 +226,6 @@ export default class CreateRedirectModal extends UmbModalBaseElement<RedirectMod
                             description='Status code of the redirect'
                             property-editor-ui-alias='Umb.PropertyEditorUi.RadioButtonList'
                             val
-                            .appearance=${this.propertyAppearance}
                             .config=${[{
                 alias: 'items',
                 value: ['Permanent (301)', 'Temporary (302)']
@@ -203,6 +233,8 @@ export default class CreateRedirectModal extends UmbModalBaseElement<RedirectMod
                         </umb-property>
                     </umb-property-dataset>
                 </uui-box>
+                
+                ${JSON.stringify(this.redirect?.getValue())}
 
                 <div class="actions">
                     <uui-button slot="actions" id="close" label="Close"

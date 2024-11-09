@@ -5,10 +5,11 @@ import { customElement, html, state, when } from "@umbraco-cms/backoffice/extern
 import { UmbPropertyDatasetElement, UmbPropertyValueData } from "@umbraco-cms/backoffice/property";
 import { UmbPropertyTypeAppearanceModel } from "@umbraco-cms/backoffice/content-type";
 import { RedirectLinkType } from "../types/RedirectLinkType";
+import { UMB_APP_LANGUAGE_CONTEXT, UmbLanguageCollectionRepository, UmbLanguageDetailModel } from "@umbraco-cms/backoffice/language";
 
 @customElement("st-create-redirect-link-modal")
 export default class CreateRedirectLinkModal extends UmbModalBaseElement<RedirectSelectLinkData, RedirectSelectLinkData> {
-    
+
     model?: UmbObjectState<RedirectSelectLinkData>;
 
     @state()
@@ -17,15 +18,29 @@ export default class CreateRedirectLinkModal extends UmbModalBaseElement<Redirec
     @state()
     _content: UmbPropertyValueData[] = [];
 
+    @state()
+    _languages: Array<UmbLanguageDetailModel> = [];
+
     propertyAppearance: UmbPropertyTypeAppearanceModel = {
-        labelOnTop: true
+        labelOnTop: false
     };
 
-    override connectedCallback(): void {
+    override async connectedCallback() {
         super.connectedCallback();
 
         this.model = new UmbObjectState(this.data!);
+        const { data } = await new UmbLanguageCollectionRepository(this).requestCollection({});
+
+        if (data) {
+            this._languages = data.items;
+            this.model.update({
+                culture: this._languages[0].unique
+            })
+        }
+
         this.observe(this.model.asObservable(), (value) => {
+            const culture = this._languages.find((lan) => lan.unique === value.culture) ?? this._languages[0];
+            console.log(value.mediaKey);
             this._content = [
                 {
                     alias: 'linkType',
@@ -33,11 +48,25 @@ export default class CreateRedirectLinkModal extends UmbModalBaseElement<Redirec
                 },
                 {
                     alias: 'url',
-                    value: value.value
+                    value: value.url
+                },
+                {
+                    alias: 'contentKey',
+                    value: value.contentKey
+                },
+                {
+                    alias: 'mediaKey',
+                    value: value.mediaKey ? [{
+                        key: value.mediaKey
+                    }] : []
+                },
+                {
+                    alias: 'culture',
+                    value: culture?.name
                 }
             ];
             this.linkType = value.linkType ?? RedirectLinkType.Url;
-        })
+        });
     }
 
     #onPropertyDataChange(e: Event) {
@@ -45,13 +74,28 @@ export default class CreateRedirectLinkModal extends UmbModalBaseElement<Redirec
 
         const newValue = {} as any;
         const modelKeys = Object.keys(this.model!.getValue());
-        console.log(value);
         value.forEach((item) => {
-            if (modelKeys.includes(item.alias)){
-                newValue[item.alias] = item.value
-            }
-            if (item.alias === 'url'){
-                newValue['value'] = item.value;
+            if (item.alias === 'culture') {
+                const itemValue = (item.value as string[])[0];
+                const culture = this._languages.find((lan) => lan.name === itemValue);
+                if (!culture) {
+                    return;
+                }
+                newValue[item.alias] = culture.unique;
+                this.modalContext?.consumeContext(UMB_APP_LANGUAGE_CONTEXT, (instance) => {
+                    instance.setLanguage(culture.unique);
+                });
+            } else if (modelKeys.includes(item.alias)) {
+                if (Array.isArray(item.value)) {
+                    console.log(item.alias, item.value);
+                    if (item.alias === 'mediaKey') {
+                        newValue[item.alias] = item.value[0]?.key;
+                    } else {
+                        newValue[item.alias] = item.value[0];
+                    }
+                } else {
+                    newValue[item.alias] = item.value;
+                }
             }
         });
         this.model?.update(newValue);
@@ -80,11 +124,10 @@ export default class CreateRedirectLinkModal extends UmbModalBaseElement<Redirec
                             property-editor-ui-alias='Umb.PropertyEditorUi.RadioButtonList'
                             val
                             required
-                            .appearance=${this.propertyAppearance}
                             .config=${[{
-                                alias: 'items',
-                                value: ['Url', 'Content', 'Media']
-                            }]}>
+                alias: 'items',
+                value: ['Url', 'Content', 'Media']
+            }]}>
                         </umb-property>
                         ${when(this.linkType === RedirectLinkType.Url, () => html`
                             <umb-property 
@@ -92,18 +135,51 @@ export default class CreateRedirectLinkModal extends UmbModalBaseElement<Redirec
                                 label='Url'
                                 description='Choose the url that you want to redirect to'
                                 property-editor-ui-alias='Umb.PropertyEditorUi.TextBox'
-                                val
-                                .appearance=${this.propertyAppearance}>
+                                val>
                             </umb-property>
                         `)}
                         ${when(this.linkType === RedirectLinkType.Content, () => html`
-                            <umb-input-content
-                                .selection=${[]}
-                                type='content'
-                                max=1></umb-input-content>
+                            ${when(this._languages.length > 1, () => html`
+                                <umb-property 
+                                    alias='culture'
+                                    label='Culture'
+                                    description='Choose the type of link that you want to redirect to'
+                                    property-editor-ui-alias='Umb.PropertyEditorUi.Dropdown'
+                                    val
+                                    required
+                                    .config=${[{
+                    alias: 'items',
+                    value: this._languages.map((item) => item.name)
+                }]}>
+                                </umb-property>
+                            `)}
+
+                            <umb-property
+                                alias='contentKey'
+                                label='Content'
+                                property-editor-ui-alias='Umb.PropertyEditorUi.DocumentPicker'
+                                val
+                                required
+                                .config=${[{
+                    alias: 'max',
+                    value: 1
+                }]}>
+
+                            </umb-property>
                         `)}
                         ${when(this.linkType === RedirectLinkType.Media, () => html`
-                            <h1>Hello media</h1>    
+                            <umb-property
+                                alias='mediaKey'
+                                label='Media'
+                                property-editor-ui-alias='Umb.PropertyEditorUi.MediaPicker'
+                                val
+                                required
+                                .config=${[{
+                        alias: 'max',
+                        value: 1
+                    }]}>
+
+                            </umb-property>
                         `)}
                     </umb-property-dataset>
                 </uui-box>

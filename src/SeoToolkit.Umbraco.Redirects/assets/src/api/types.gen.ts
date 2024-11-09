@@ -70,8 +70,8 @@ export type RedirectViewModel = {
     isRegex: boolean;
     oldUrl?: (string) | null;
     newUrl?: (string) | null;
-    newNodeId?: (number) | null;
-    newCultureId?: (number) | null;
+    newNodeId?: (string) | null;
+    newCulture?: (string) | null;
     redirectCode: number;
 };
 
@@ -102,8 +102,8 @@ export type SaveRedirectPostModel = {
     isRegex: boolean;
     oldUrl?: (string) | null;
     newUrl?: (string) | null;
-    newNodeId?: (number) | null;
-    newCultureId?: (number) | null;
+    newNodeId?: (string) | null;
+    newCultureId?: (string) | null;
     redirectCode: number;
 };
 
@@ -182,7 +182,7 @@ export type GetUmbracoSeoToolkitTreeInfoRootData = {
 
 export type GetUmbracoSeoToolkitTreeInfoRootResponse = ((PagedNamedEntityTreeItemResponseModel));
 
-export type GetUmbracoSeoToolkitRedirectsDomainsResponse = ((DomainViewModel));
+export type GetUmbracoSeoToolkitRedirectsDomainsResponse = (Array<(DomainViewModel)>);
 
 export type PostUmbracoSeoToolkitRedirectsImportResponse = (string);
 
