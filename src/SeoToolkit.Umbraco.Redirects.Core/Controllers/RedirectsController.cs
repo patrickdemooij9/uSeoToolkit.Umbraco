@@ -77,7 +77,7 @@ namespace SeoToolkit.Umbraco.Redirects.Core.Controllers
                     return new BadRequestResult();
             }
 
-            if (string.IsNullOrWhiteSpace(postModel.NewCultureId))
+            if (!string.IsNullOrWhiteSpace(postModel.NewCultureId))
             {
                 var languages = await _languageService.GetAllAsync();
                 redirect.NewNodeCulture = languages.FirstOrDefault(it => it.IsoCode == postModel.NewCultureId);
@@ -100,7 +100,7 @@ namespace SeoToolkit.Umbraco.Redirects.Core.Controllers
         }
 
         [HttpGet("redirects")]
-        [ProducesResponseType(typeof(PagedViewModel<RedirectViewModel>), 200)]
+        [ProducesResponseType(typeof(PagedViewModel<RedirectListViewModel>), 200)]
         public IActionResult GetAll(int pageNumber, int pageSize, string orderBy = null, string orderDirection = null, string search = "")
         {
             var redirectsPaged = _redirectsService.GetAll(pageNumber, pageSize, orderBy, orderDirection, search);
@@ -109,9 +109,18 @@ namespace SeoToolkit.Umbraco.Redirects.Core.Controllers
                 var domain = it.Domain?.Name ?? it.CustomDomain;
                 if (domain?.StartsWith("/") is true)
                     domain = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Value}{domain}";
-                return new RedirectViewModel(it);
+                return new RedirectListViewModel
+                {
+                    Id = it.Id,
+                    IsEnabled = it.IsEnabled,
+                    OldUrl = it.OldUrl.IfNullOrWhiteSpace("/"),
+                    NewUrl = it.GetNewUrl(),
+                    Domain = domain,
+                    StatusCode = it.RedirectCode,
+                    LastUpdated = it.LastUpdated.ToShortDateString()
+                };
             });
-            return Ok(new PagedViewModel<RedirectViewModel>() { Total = redirectsPaged.TotalItems, Items = viewModels });
+            return Ok(new PagedViewModel<RedirectListViewModel>() { Total = redirectsPaged.TotalItems, Items = viewModels });
         }
 
         [HttpGet("redirect")]

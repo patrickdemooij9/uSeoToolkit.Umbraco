@@ -149,7 +149,7 @@ export const PagedNamedEntityTreeItemResponseModelSchema = {
     additionalProperties: false
 } as const;
 
-export const PagedRedirectModelSchema = {
+export const PagedRedirectListModelSchema = {
     required: ['items', 'total'],
     type: 'object',
     properties: {
@@ -162,10 +162,45 @@ export const PagedRedirectModelSchema = {
             items: {
                 oneOf: [
                     {
-                        '$ref': '#/components/schemas/RedirectViewModel'
+                        '$ref': '#/components/schemas/RedirectListViewModel'
                     }
                 ]
             }
+        }
+    },
+    additionalProperties: false
+} as const;
+
+export const RedirectListViewModelSchema = {
+    required: ['id', 'isEnabled', 'statusCode'],
+    type: 'object',
+    properties: {
+        id: {
+            type: 'integer',
+            format: 'int32'
+        },
+        isEnabled: {
+            type: 'boolean'
+        },
+        domain: {
+            type: 'string',
+            nullable: true
+        },
+        oldUrl: {
+            type: 'string',
+            nullable: true
+        },
+        newUrl: {
+            type: 'string',
+            nullable: true
+        },
+        statusCode: {
+            type: 'integer',
+            format: 'int32'
+        },
+        lastUpdated: {
+            type: 'string',
+            nullable: true
         }
     },
     additionalProperties: false
@@ -207,13 +242,17 @@ export const RedirectViewModelSchema = {
             format: 'uuid',
             nullable: true
         },
-        newCulture: {
+        newCultureIso: {
             type: 'string',
             nullable: true
         },
         redirectCode: {
             type: 'integer',
             format: 'int32'
+        },
+        lastUpdated: {
+            type: 'string',
+            nullable: true
         }
     },
     additionalProperties: false

@@ -4,39 +4,52 @@ import { RedirectSource } from "./RedirectSource";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { Redirect } from "../models/Redirect";
 import { SaveRedirectPostModel } from "../api";
+import { RedirectOverviewItem } from "../models/RedirectOverviewItem";
 
-export default class RedirectRepository extends UmbRepositoryBase implements UmbCollectionRepository
-{
+export default class RedirectRepository extends UmbRepositoryBase implements UmbCollectionRepository {
     #source: RedirectSource;
 
     constructor(host: UmbControllerHost) {
         super(host);
-        
+
         this.#source = new RedirectSource(host);
     }
 
-    async requestCollection(filter?: UmbCollectionFilterModel | undefined): Promise<UmbRepositoryResponse<UmbPagedModel<Redirect>>> {
+    async requestCollection(filter?: UmbCollectionFilterModel | undefined): Promise<UmbRepositoryResponse<UmbPagedModel<RedirectOverviewItem>>> {
         const pageNumber = !filter ? 1 : (filter.skip! / filter.take!) + 1;
-        const data = await this.#source.getRedirects(pageNumber, filter?.take ?? 10); 
-        const result: UmbRepositoryResponse<UmbPagedModel<Redirect>> = {
+        const data = await this.#source.getRedirects(pageNumber, filter?.take ?? 10);
+        const result: UmbRepositoryResponse<UmbPagedModel<RedirectOverviewItem>> = {
             data: {
                 total: data.data!.total,
                 items: data.data!.items.map((item) => ({
                     unique: item.id.toString(),
                     entityType: 'st-redirect',
-                    statusCode: 200,
                     ...item
                 }))
             }
         }
         return result;
     }
-    
-    async save(redirect: SaveRedirectPostModel){
+
+    async get(unique: number): Promise<Redirect> {
+        const data = (await this.#source.get(unique)).data!;
+
+        return {
+            unique: data.id.toString(),
+            entityType: 'st-redirect',
+            ...data
+        }
+    }
+
+    async save(redirect: SaveRedirectPostModel) {
         await this.#source.save(redirect);
     }
-    
-    async getDomains(){
+
+    async delete(ids: number[]){
+        await this.#source.delete(ids);
+    }
+
+    async getDomains() {
         return await this.#source.getDomains();
     }
 }

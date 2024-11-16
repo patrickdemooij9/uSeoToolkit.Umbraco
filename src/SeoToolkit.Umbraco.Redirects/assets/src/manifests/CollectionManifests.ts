@@ -1,5 +1,6 @@
 import { UMB_COLLECTION_ALIAS_CONDITION } from "@umbraco-cms/backoffice/collection";
-import { ManifestCollection, ManifestCollectionAction, ManifestCollectionView, ManifestRepository } from "@umbraco-cms/backoffice/extension-registry";
+import { ManifestCollection, ManifestCollectionAction, ManifestCollectionView, ManifestEntityBulkAction, ManifestRepository } from "@umbraco-cms/backoffice/extension-registry";
+import { SEOTOOLKIT_REDIRECT_ENTITY } from "../Constants";
 
 const RedirectCollection: ManifestCollection = {
     type: 'collection',
@@ -47,23 +48,23 @@ const RedirectCollectionCreateAction: ManifestCollectionAction = {
     ],
 }
 
-/*const ScriptManagerCollectionTrashBulkAction: ManifestEntityBulkAction = {
+const RedirectCollectionTrashBulkAction: ManifestEntityBulkAction = {
     type: 'entityBulkAction',
-	alias: 'seoToolkit.collections.script.trashAction',
-	name: 'ScriptManager Collection Overview Trash',
+	alias: 'seoToolkit.collections.redirects.trashAction',
+	name: 'Redirect Collection Overview Trash',
 	weight: 10,
-    api: () => import('../actions/ScriptManagerDeleteAction'),
-	forEntityTypes: [SEOTOOLKIT_SCRIPTMANAGER_ENTITY],
+    api: () => import('../actions/DeleteRedirectAction'),
+	forEntityTypes: [SEOTOOLKIT_REDIRECT_ENTITY],
 	meta: {
 		label: 'Delete'
 	},
 	conditions: [
 		{
 			alias: UMB_COLLECTION_ALIAS_CONDITION,
-			match: 'seoToolkit.collections.scripts',
+			match: 'seoToolkit.collections.redirects',
 		}
 	],
-}*/
+}
 
 const RedirectRepository: ManifestRepository = {
     type: 'repository',
@@ -72,4 +73,4 @@ const RedirectRepository: ManifestRepository = {
     api: () => import('../dataLayer/RedirectRepository')
 }
 
-export const CollectionManifests = [RedirectCollection, RedirectCollectionView, RedirectCollectionCreateAction, RedirectRepository];
+export const CollectionManifests = [RedirectCollection, RedirectCollectionView, RedirectCollectionCreateAction, RedirectCollectionTrashBulkAction, RedirectRepository];

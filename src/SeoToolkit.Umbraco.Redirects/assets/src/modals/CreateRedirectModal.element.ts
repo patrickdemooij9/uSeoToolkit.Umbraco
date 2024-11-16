@@ -47,6 +47,10 @@ export default class CreateRedirectModal extends UmbModalBaseElement<RedirectMod
                     value: [domainName]
                 },
                 {
+                    alias: 'customDomain',
+                    value: value.customDomain
+                },
+                {
                     alias: 'isEnabled',
                     value: value.isEnabled
                 },
@@ -55,8 +59,8 @@ export default class CreateRedirectModal extends UmbModalBaseElement<RedirectMod
                     value: value.newUrl
                 },
                 {
-                    alias: 'statusCode',
-                    value: value.statusCode
+                    alias: 'redirectCode',
+                    value: value.redirectCode === 301 ? 'Permanent (301)' : 'Temporary (302)'
                 }
             ];
             this.#options = [
@@ -80,6 +84,7 @@ export default class CreateRedirectModal extends UmbModalBaseElement<RedirectMod
                 } else {
                     this.#documentRepository.requestByUnique(value.newNodeId!).then((resp) => {
                         this.newUrlName = resp.data?.urls.find((u) => u.culture === value.newCultureIso)?.url;
+                        console.log(this.newUrlName);
                     });
                 }
             }
@@ -90,13 +95,14 @@ export default class CreateRedirectModal extends UmbModalBaseElement<RedirectMod
         const value = (e.target as UmbPropertyDatasetElement).value;
 
         const newValue = {} as any;
-        const modelKeys = Object.keys(this.redirect!.getValue());
         value.forEach((item) => {
             if (item.alias === 'domain') {
                 const domainId = this.domains.find((d) => d.name === (item.value as string[])[0])?.id;
                 newValue["domain"] = domainId
             }
-            else if (modelKeys.includes(item.alias)) {
+            else if (item.alias === 'redirectCode') {
+                newValue["redirectCode"] = item.value === 'Permanent (301)' ? 301 : 302;
+            } else {
                 if (Array.isArray(item.value)) {
                     newValue[item.alias] = item.value[0];
                 } else {
@@ -184,6 +190,15 @@ export default class CreateRedirectModal extends UmbModalBaseElement<RedirectMod
                 value: this.domains.map(item => item.name)
             }]}>
                         </umb-property>
+                        ${when(this.redirect?.value.domain === -1, () => html`
+                            <umb-property
+                                alias='customDomain'
+                                label='Custom domain'
+                                description="Choose a custom domain if it isn't present in Umbraco"
+                                property-editor-ui-alias='Umb.PropertyEditorUi.TextBox'
+                                val>
+                            </umb-property>
+                        `)}
                         <umb-property 
                             alias='isEnabled'
                             label='Enabled'
@@ -221,7 +236,7 @@ export default class CreateRedirectModal extends UmbModalBaseElement<RedirectMod
                             </div>
                         </umb-property-layout>
                         <umb-property
-                            alias='statusCode'
+                            alias='redirectCode'
                             label='Status code'
                             description='Status code of the redirect'
                             property-editor-ui-alias='Umb.PropertyEditorUi.RadioButtonList'

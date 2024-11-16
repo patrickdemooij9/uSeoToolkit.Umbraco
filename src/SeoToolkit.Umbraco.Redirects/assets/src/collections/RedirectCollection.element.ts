@@ -32,7 +32,7 @@ export default class RedirectCollection extends UmbLitElement {
         },
         {
             name: 'Status code',
-            alias: 'statusCode'
+            alias: 'redirectCode'
         },
         {
             name: 'Last updated',
@@ -49,6 +49,10 @@ export default class RedirectCollection extends UmbLitElement {
     constructor() {
         super();
 
+        this.loadItems();
+    }
+
+    async loadItems(){
         this.consumeContext(ST_REDIRECT_MODULE_TOKEN_CONTEXT, (instance) => {
             this.#context = instance;
 
@@ -62,7 +66,8 @@ export default class RedirectCollection extends UmbLitElement {
                         {
                             columnAlias: 'from',
                             value: {
-                                name: item.oldUrl, unique: item.unique
+                                name: item.oldUrl,
+                                unique: item.unique,
                             }
                         }, {
                             columnAlias: 'to',
@@ -71,7 +76,7 @@ export default class RedirectCollection extends UmbLitElement {
                             columnAlias: 'domain',
                             value: item.domain
                         },{
-                            columnAlias: 'statusCode',
+                            columnAlias: 'redirectCode',
                             value: item.statusCode
                         },{
                             columnAlias: 'lastUpdated',

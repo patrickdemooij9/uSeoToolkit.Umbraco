@@ -21,11 +21,25 @@ export class RedirectSource {
         }));
     };
 
+    async get(id: number){
+        return await tryExecuteAndNotify(this.#host, SeoToolkitRedirectsService.getUmbracoSeoToolkitRedirectsRedirect({
+            id: id
+        }));
+    }
+
     async save(redirect: SaveRedirectPostModel){
         await tryExecuteAndNotify(this.#host, SeoToolkitRedirectsService.postUmbracoSeoToolkitRedirectsRedirect({
             requestBody: redirect
         }));
     };
+
+    async delete(ids: number[]){
+        await tryExecuteAndNotify(this.#host, SeoToolkitRedirectsService.deleteUmbracoSeoToolkitRedirectsRedirect({
+            requestBody: {
+                ids: ids
+            }
+        }))
+    }
 
     async getDomains(){
         return await tryExecuteAndNotify(this.#host, SeoToolkitRedirectsService.getUmbracoSeoToolkitRedirectsDomains());

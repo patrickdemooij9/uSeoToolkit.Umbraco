@@ -8,7 +8,7 @@ export class RedirectModuleWorkspace extends UmbElementMixin(LitElement) {
     render() {
         return html`
             <umb-body-layout main-no-padding headline='Redirects'>
-                <umb-collection alias='seoToolkit.collections.redirects'></umb-collection>;
+                <umb-collection alias='seoToolkit.collections.redirects'></umb-collection>
             </umb-body-layout>
         `
     }

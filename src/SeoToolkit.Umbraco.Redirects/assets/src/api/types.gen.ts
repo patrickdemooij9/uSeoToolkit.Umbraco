@@ -57,9 +57,19 @@ export type PagedNamedEntityTreeItemResponseModel = {
     items: Array<(NamedEntityTreeItemResponseModel)>;
 };
 
-export type PagedRedirectModel = {
+export type PagedRedirectListModel = {
     total: number;
-    items: Array<(RedirectViewModel)>;
+    items: Array<(RedirectListViewModel)>;
+};
+
+export type RedirectListViewModel = {
+    id: number;
+    isEnabled: boolean;
+    domain?: (string) | null;
+    oldUrl?: (string) | null;
+    newUrl?: (string) | null;
+    statusCode: number;
+    lastUpdated?: (string) | null;
 };
 
 export type RedirectViewModel = {
@@ -71,8 +81,9 @@ export type RedirectViewModel = {
     oldUrl?: (string) | null;
     newUrl?: (string) | null;
     newNodeId?: (string) | null;
-    newCulture?: (string) | null;
+    newCultureIso?: (string) | null;
     redirectCode: number;
+    lastUpdated?: (string) | null;
 };
 
 export type ReferenceByIdModel = {
@@ -212,7 +223,7 @@ export type GetUmbracoSeoToolkitRedirectsRedirectsData = {
     search?: string;
 };
 
-export type GetUmbracoSeoToolkitRedirectsRedirectsResponse = ((PagedRedirectModel));
+export type GetUmbracoSeoToolkitRedirectsRedirectsResponse = ((PagedRedirectListModel));
 
 export type PostUmbracoSeoToolkitRedirectsValidateData = {
     domain?: string;

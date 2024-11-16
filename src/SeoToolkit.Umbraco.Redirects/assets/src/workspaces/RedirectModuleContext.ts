@@ -7,8 +7,9 @@ import { SEOTOOLKIT_REDIRECT_ENTITY } from "../Constants";
 import { UMB_MODAL_MANAGER_CONTEXT } from "@umbraco-cms/backoffice/modal";
 import RedirectRepository from "../dataLayer/RedirectRepository";
 import { RedirectModalData } from "../models/RedirectModalData";
+import { RedirectOverviewItem } from "../models/RedirectOverviewItem";
 
-export default class RedirectModuleContext extends UmbDefaultCollectionContext<Redirect, any> {
+export default class RedirectModuleContext extends UmbDefaultCollectionContext<RedirectOverviewItem, any> {
     workspaceAlias = 'seoToolkit.collections.redirects';
 
     constructor(host: UmbControllerBase) {
@@ -17,15 +18,20 @@ export default class RedirectModuleContext extends UmbDefaultCollectionContext<R
         this.provideContext(ST_REDIRECT_MODULE_TOKEN_CONTEXT, this);
     }
 
-    openCreateModal() {
+    async openCreateModal(unique?: string) {
+        let redirect: Partial<Redirect> = {
+            redirectCode: 302,
+            isEnabled: true
+        };
+        if (unique) {
+            redirect = await new RedirectRepository(this).get(Number.parseInt(unique));
+        }
+
         this.consumeContext(UMB_MODAL_MANAGER_CONTEXT, async (instance) => {
             const modal = instance.open(this._host, 'seoToolkit.modal.redirect.create', {
                 modal: { type: 'sidebar', size: 'medium' },
                 data: {
-                    redirect: {
-                        domain: '',
-                        isEnabled: true
-                    }
+                    redirect: redirect
                 }
             });
 
@@ -34,16 +40,16 @@ export default class RedirectModuleContext extends UmbDefaultCollectionContext<R
             const data = (modal.getValue() as RedirectModalData).redirect;
             
             await new RedirectRepository(this).save({
-                id: 0,
+                id: unique ? Number.parseInt(unique) : 0,
                 domain: data.domain,
-                customDomain: '',
+                customDomain: data.customDomain,
                 isEnabled: data.isEnabled,
                 isRegex: data.isRegex,
                 oldUrl: data.oldUrl,
                 newUrl: data.newUrl,
                 newNodeId: data.newNodeId,
                 newCultureId: data.newCultureIso,
-                redirectCode: 301
+                redirectCode: data.redirectCode
             });
 
             this.requestCollection();
