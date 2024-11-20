@@ -4,7 +4,8 @@
     "robotsTxt": "cd SeoToolkit.Umbraco.RobotsTxt/assets && npm run build --watch",
     "scriptManager": "cd SeoToolkit.Umbraco.ScriptManager/assets && npm run build --watch",
     "redirect": "cd SeoToolkit.Umbraco.Redirects/assets && npm run build --watch",
-    "start": "concurrently \"npm run common\" \"npm run robotsTxt\" \"npm run scriptManager\" \"npm run redirect\""
+    "sitemap": "cd SeoToolkit.Umbraco.Sitemap/assets && npm run build --watch",
+    "start": "concurrently \"npm run common\" \"npm run robotsTxt\" \"npm run scriptManager\" \"npm run redirect\" \"npm run sitemap\""
   },
   "dependencies": {
     "concurrently": "^9.0.1"

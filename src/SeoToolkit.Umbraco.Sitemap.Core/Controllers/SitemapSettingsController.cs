@@ -1,15 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Umbraco.Cms.Web.BackOffice.Controllers;
-using Umbraco.Cms.Web.Common.Attributes;
 using SeoToolkit.Umbraco.Sitemap.Core.Models.Business;
 using SeoToolkit.Umbraco.Sitemap.Core.Models.PostModels;
 using SeoToolkit.Umbraco.Sitemap.Core.Models.ViewModels;
 using SeoToolkit.Umbraco.Sitemap.Core.Services.SitemapService;
+using SeoToolkit.Umbraco.Common.Core.Controllers;
+using Umbraco.Cms.Web.Common.Routing;
 
 namespace SeoToolkit.Umbraco.Sitemap.Core.Controllers
 {
-    [PluginController("SeoToolkit")]
-    public class SitemapSettingsController : UmbracoAuthorizedApiController
+    [ApiExplorerSettings(GroupName = "seoToolkitSitemap")]
+    [BackOfficeRoute("seoToolkitSitemap")]
+    public class SitemapSettingsController : SeoToolkitControllerBase
     {
         private readonly ISitemapService _sitemapService;
 
@@ -18,7 +19,8 @@ namespace SeoToolkit.Umbraco.Sitemap.Core.Controllers
             _sitemapService = sitemapService;
         }
 
-        [HttpGet]
+        [HttpGet("sitemapSettings")]
+        [ProducesResponseType(typeof(SitemapPageTypeSettingsViewModel), 200)]
         public IActionResult GetPageTypeSettings(int contentTypeId)
         {
             var settings = _sitemapService.GetPageTypeSettings(contentTypeId) ?? new SitemapPageSettings();
@@ -30,7 +32,7 @@ namespace SeoToolkit.Umbraco.Sitemap.Core.Controllers
             });
         }
 
-        [HttpPost]
+        [HttpPost("sitemapSettings")]
         public IActionResult SetPageTypeSettings(SitemapPageTypeSettingsPostModel model)
         {
             _sitemapService.SetPageTypeSettings(new SitemapPageSettings

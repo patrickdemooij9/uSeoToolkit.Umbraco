@@ -1,7 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json.Nodes;
+using System.Threading.Tasks;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Core.Manifest;
+using Umbraco.Cms.Infrastructure.Manifest;
 
 namespace SeoToolkit.Umbraco.Sitemap
 {
@@ -9,24 +14,31 @@ namespace SeoToolkit.Umbraco.Sitemap
     {
         public void Compose(IUmbracoBuilder builder)
         {
-            builder.ManifestFilters().Append<ManifestFilter>();
+            builder.Services.AddSingleton<IPackageManifestReader, ManifestFilter>();
         }
     }
 
-    internal class ManifestFilter : IManifestFilter
+    internal class ManifestFilter : IPackageManifestReader
     {
-        public void Filter(List<PackageManifest> manifests)
+        public Task<IEnumerable<PackageManifest>> ReadPackageManifestsAsync()
         {
-            manifests.Add(new PackageManifest
+            var entrypoint = JsonNode.Parse(@"{""name"": ""seoToolkit.sitemap.entrypoint"",
+            ""alias"": ""SeoToolkit.Sitemap.EntryPoint"",
+            ""type"": ""entryPoint"",
+            ""js"": ""/App_Plugins/SeoToolkit/entry/sitemap/sitemap.js""}");
+
+            List<PackageManifest> manifest = [
+                new PackageManifest
             {
-                PackageName = "SeoToolkit.Umbraco.Sitemap",
+                Id = "SeoToolkit.Umbraco.Sitemap",
+                Name = "SeoToolkit Sitemap",
+                AllowTelemetry = true,
                 Version = "4.0.0",
-                Scripts = new[]
-                {
-                    "/App_Plugins/SeoToolkit/Sitemap/Displays/DocumentType/sitemapSettings.controller.js"
-                },
-                BundleOptions = BundleOptions.None
-            });
+                Extensions = [ entrypoint!],
+            }
+            ];
+
+            return Task.FromResult(manifest.AsEnumerable());
         }
     }
 }

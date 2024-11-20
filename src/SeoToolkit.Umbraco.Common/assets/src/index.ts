@@ -6,6 +6,7 @@ import { OpenAPI } from './api';
 import { seoToolkitSidebar } from './sidebar/seoToolkitSidebar';
 import { TreeManifests } from './trees/seoToolkitTree';
 import { manifest } from './conditions/workspaceEntityIdCondition';
+import { Manifests as DocumentManifests } from './manifests/seoToolkitDocumentManifests';
 
 export const onInit: UmbEntryPointOnInit = (host, extensionRegistry) => {
 
@@ -26,4 +27,5 @@ export const onInit: UmbEntryPointOnInit = (host, extensionRegistry) => {
     extensionRegistry.register(manifest);
 
     extensionRegistry.registerMany(TreeManifests);
+    extensionRegistry.registerMany(DocumentManifests);
 };
