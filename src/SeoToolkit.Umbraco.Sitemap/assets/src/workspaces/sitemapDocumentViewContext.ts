@@ -6,11 +6,13 @@ import { UmbObjectState } from "@umbraco-cms/backoffice/observable-api";
 import PageSettingsRepository from "../repositories/pageSettingsRepository";
 import { UMB_DOCUMENT_TYPE_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/document-type";
 import { UmbContextToken } from "@umbraco-cms/backoffice/context-api";
+import { UMB_ACTION_EVENT_CONTEXT, UmbActionEventContext } from "@umbraco-cms/backoffice/action";
 
 export default class SitemapDocumentViewContext extends UmbContextBase<SitemapPageTypeSettingsPostModel> implements UmbWorkspaceContext {
     workspaceAlias: string = "Umb.Workspace.DocumentType";
 
     #repository: PageSettingsRepository;
+    #actionEventContext?: UmbActionEventContext;
 
     #model = new UmbObjectState<SitemapPageTypeSettingsPostModel>({
         contentTypeGuid: '',
@@ -35,14 +37,27 @@ export default class SitemapDocumentViewContext extends UmbContextBase<SitemapPa
                 })
             });
         });
+
+        this.consumeContext(UMB_ACTION_EVENT_CONTEXT, (instance) => {
+            this.#actionEventContext = instance;
+            instance.addEventListener("document.save", () => this.#save(this));
+        });
     }
 
     update(model: Partial<SitemapPageTypeSettingsPostModel>) {
         this.#model.update(model);
     }
 
-    public save() {
+    save() {
         this.#repository.setPageSettings(this.#model.getValue());
+    }
+
+    destroy(): void {
+        this.#actionEventContext?.removeEventListener("document.save", () => this.#save(this));
+    }
+
+    #save(context: SitemapDocumentViewContext) {
+        context.save();
     }
 
     getEntityType(): string {

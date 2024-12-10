@@ -4,13 +4,11 @@ import { html, LitElement } from "lit";
 import { UmbPropertyDatasetElement, UmbPropertyValueData } from "@umbraco-cms/backoffice/property";
 import ChangeFrequence from "../models/changeFrequency";
 import Priority from "../models/priority";
-import { UMB_ACTION_EVENT_CONTEXT, UmbActionEventContext } from "@umbraco-cms/backoffice/action";
 import SitemapDocumentViewContext, { ST_SITEMAP_DOCUMENT_TOKEN_CONTEXT } from "./sitemapDocumentViewContext";
 
 @customElement("st-sitemap-document-view")
 export default class SitemapDocumentViewElement extends UmbElementMixin(LitElement) {
     #context?: SitemapDocumentViewContext;
-    #actionEventContext?: UmbActionEventContext;
 
     #changeFrequences: ChangeFrequence[] = [
         { name: 'None', value: undefined },
@@ -64,11 +62,6 @@ export default class SitemapDocumentViewElement extends UmbElementMixin(LitEleme
                 ]
             });
         });
-
-        this.consumeContext(UMB_ACTION_EVENT_CONTEXT, (instance) => {
-            this.#actionEventContext = instance;
-            instance.addEventListener("document.save", () => this.#save(this.#context!));
-        });
     }
 
     #onPropertyDataChange(e: Event) {
@@ -90,14 +83,6 @@ export default class SitemapDocumentViewElement extends UmbElementMixin(LitEleme
             }
         });
         this.#context?.update(newValue);
-    }
-
-    #save(context: SitemapDocumentViewContext) {
-        context.save();
-    }
-
-    destroy() {
-        this.#actionEventContext?.removeEventListener("document.save", () => this.#save(this.#context!));
     }
 
     render() {
@@ -136,7 +121,6 @@ export default class SitemapDocumentViewElement extends UmbElementMixin(LitEleme
                             }]}>
                     </umb-property>
                 </umb-property-dataset>
-                ${JSON.stringify(this._content)}
             </uui-box>
         `
     }
