@@ -5,6 +5,8 @@ using SeoToolkit.Umbraco.Sitemap.Core.Models.ViewModels;
 using SeoToolkit.Umbraco.Sitemap.Core.Services.SitemapService;
 using SeoToolkit.Umbraco.Common.Core.Controllers;
 using Umbraco.Cms.Web.Common.Routing;
+using System;
+using Umbraco.Cms.Core.Services;
 
 namespace SeoToolkit.Umbraco.Sitemap.Core.Controllers
 {
@@ -13,17 +15,25 @@ namespace SeoToolkit.Umbraco.Sitemap.Core.Controllers
     public class SitemapSettingsController : SeoToolkitControllerBase
     {
         private readonly ISitemapService _sitemapService;
+        private readonly IContentTypeService _contentTypeService;
 
-        public SitemapSettingsController(ISitemapService sitemapService)
+        public SitemapSettingsController(ISitemapService sitemapService, IContentTypeService contentTypeService)
         {
             _sitemapService = sitemapService;
+            _contentTypeService = contentTypeService;
         }
 
         [HttpGet("sitemapSettings")]
         [ProducesResponseType(typeof(SitemapPageTypeSettingsViewModel), 200)]
-        public IActionResult GetPageTypeSettings(int contentTypeId)
+        public IActionResult GetPageTypeSettings(Guid contentTypeGuid)
         {
-            var settings = _sitemapService.GetPageTypeSettings(contentTypeId) ?? new SitemapPageSettings();
+            var settings = new SitemapPageSettings();
+            var contentType = _contentTypeService.Get(contentTypeGuid);
+            if (contentType != null)
+            {
+                settings = _sitemapService.GetPageTypeSettings(contentType.Id) ?? new SitemapPageSettings();
+            }
+
             return new JsonResult(new SitemapPageTypeSettingsViewModel
             {
                 HideFromSitemap = settings.HideFromSitemap,
@@ -35,9 +45,12 @@ namespace SeoToolkit.Umbraco.Sitemap.Core.Controllers
         [HttpPost("sitemapSettings")]
         public IActionResult SetPageTypeSettings(SitemapPageTypeSettingsPostModel model)
         {
+            var contentType = _contentTypeService.Get(model.ContentTypeGuid);
+            if (contentType is null) return NotFound();
+
             _sitemapService.SetPageTypeSettings(new SitemapPageSettings
             {
-                ContentTypeId = model.ContentTypeId,
+                ContentTypeId = contentType.Id,
                 HideFromSitemap = model.HideFromSitemap,
                 ChangeFrequency = model.ChangeFrequency,
                 Priority = model.Priority

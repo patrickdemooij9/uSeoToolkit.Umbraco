@@ -163,7 +163,7 @@ export const SeoToolkitModuleStatus = {
 } as const;
 
 export type SitemapPageTypeSettingsPostModel = {
-    contentTypeId: number;
+    contentTypeGuid: string;
     hideFromSitemap: boolean;
     changeFrequency?: (string) | null;
     priority?: (number) | null;
@@ -271,7 +271,7 @@ export type PostUmbracoSeoToolkitScriptManagerScriptResponse = ((ScriptDetailVie
 export type GetUmbracoSeoToolkitScriptManagerScriptsResponse = (Array<(ScriptListViewModel)>);
 
 export type GetUmbracoSeoToolkitSitemapSitemapSettingsData = {
-    contentTypeId?: number;
+    contentTypeGuid?: string;
 };
 
 export type GetUmbracoSeoToolkitSitemapSitemapSettingsResponse = ((SitemapPageTypeSettingsViewModel));

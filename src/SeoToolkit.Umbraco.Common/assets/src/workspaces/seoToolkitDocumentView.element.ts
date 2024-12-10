@@ -5,6 +5,7 @@ import { customElement, repeat, state } from "@umbraco-cms/backoffice/external/l
 import { css, html, LitElement, nothing } from "lit";
 import { UmbRoute, UmbRouterSlotChangeEvent, UmbRouterSlotInitEvent } from "@umbraco-cms/backoffice/router";
 import { SeoDocumentViewManifest } from "../manifests/seoDocumentViewManifest";
+import { UMB_DOCUMENT_TYPE_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/document-type";
 
 @customElement("st-document-view")
 export default class SeoToolkitDocumentViewElement extends UmbElementMixin(LitElement) {
@@ -21,8 +22,17 @@ export default class SeoToolkitDocumentViewElement extends UmbElementMixin(LitEl
 	@state()
 	private _activePath?: string;
 
+	@state()
+	private _showViews: boolean = true;
+
     constructor(){
         super();
+
+		this.consumeContext(UMB_DOCUMENT_TYPE_WORKSPACE_CONTEXT, (instance) => {
+			instance.isElement.subscribe((value) => {
+				this._showViews = !value;
+			})
+		});
 
         new UmbExtensionsManifestInitializer(this, umbExtensionsRegistry, 'seoDocumentView', null, (documentViews) => {
 			this._documentViews = documentViews.map((view) => view.manifest as unknown as SeoDocumentViewManifest);
@@ -62,6 +72,7 @@ export default class SeoToolkitDocumentViewElement extends UmbElementMixin(LitEl
     }
 
     #renderViews() {
+		if (!this._showViews) return nothing;
 		return html`
 			<uui-tab-group class="navigation">
                 ${repeat(
@@ -84,6 +95,13 @@ export default class SeoToolkitDocumentViewElement extends UmbElementMixin(LitEl
 
     #renderRoutes() {
 		if (!this._routes || this._routes.length === 0) return nothing;
+		if (!this._showViews){
+			return html`
+				<div class="empty-state">
+					This is not applicable for element types
+				</div>
+			`
+		}
 		return html`
 			<umb-body-layout>
 				<umb-router-slot

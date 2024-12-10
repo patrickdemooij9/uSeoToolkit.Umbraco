@@ -301,7 +301,7 @@ export class SeoToolkitScriptManagerService {
 export class SeoToolkitSitemapService {
     /**
      * @param data The data for the request.
-     * @param data.contentTypeId
+     * @param data.contentTypeGuid
      * @returns unknown OK
      * @throws ApiError
      */
@@ -310,7 +310,7 @@ export class SeoToolkitSitemapService {
             method: 'GET',
             url: '/umbraco/seoToolkitSitemap/sitemapSettings',
             query: {
-                contentTypeId: data.contentTypeId
+                contentTypeGuid: data.contentTypeGuid
             }
         });
     }

@@ -1,4 +1,4 @@
-import { ManifestWorkspaceView } from "@umbraco-cms/backoffice/extension-registry";
+import { ManifestWorkspaceAction, ManifestWorkspaceView } from "@umbraco-cms/backoffice/extension-registry";
 import { SeoDocumentViewManifest } from "./seoDocumentViewManifest";
 
 const workSpaceView: ManifestWorkspaceView = {
@@ -11,6 +11,26 @@ const workSpaceView: ManifestWorkspaceView = {
         label: 'SEO',
         pathname: 'seo',
         icon: 'icon-globe',
+    },
+    conditions: [
+        {
+            alias: 'Umb.Condition.WorkspaceAlias',
+            match: 'Umb.Workspace.DocumentType'
+        }
+    ]
+}
+
+const overwriteSaveAction: ManifestWorkspaceAction = {
+    type: 'workspaceAction',
+    kind: 'default',
+    overwrites: 'Umb.WorkspaceAction.DocumentType.Save',
+    alias: 'seoToolkit.common.document.save',
+    name: 'SeoToolkit Common Document Save',
+    api: () => import("../actions/saveDocumentAction"),
+    meta: {
+        label: '#buttons_save',
+        look: 'primary',
+        color: 'positive',
     },
     conditions: [
         {
@@ -33,4 +53,4 @@ const documentView: SeoDocumentViewManifest = {
     },
 }
 
-export const Manifests = [workSpaceView, documentView];
+export const Manifests = [workSpaceView, documentView, overwriteSaveAction];

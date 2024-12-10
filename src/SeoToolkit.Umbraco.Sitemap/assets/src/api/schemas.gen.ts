@@ -502,12 +502,12 @@ export const SeoToolkitModuleStatusSchema = {
 } as const;
 
 export const SitemapPageTypeSettingsPostModelSchema = {
-    required: ['contentTypeId', 'hideFromSitemap'],
+    required: ['contentTypeGuid', 'hideFromSitemap'],
     type: 'object',
     properties: {
-        contentTypeId: {
-            type: 'integer',
-            format: 'int32'
+        contentTypeGuid: {
+            type: 'string',
+            format: 'uuid'
         },
         hideFromSitemap: {
             type: 'boolean'
