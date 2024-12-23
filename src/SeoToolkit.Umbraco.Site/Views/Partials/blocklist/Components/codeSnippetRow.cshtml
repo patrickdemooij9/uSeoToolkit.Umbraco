@@ -11,12 +11,6 @@
     {
         spacingClasses = Clean.Core.Helpers.SpacingHelper.GetSpacingClasses(spacing.PaddingTop, spacing.PaddingBottom, spacing.PaddingLeft, spacing.PaddingRight, spacing.MarginTop, spacing.MarginBottom, spacing.MarginLeft, spacing.MarginRight);
     }
-
-    SmidgeHelper.RequiresCss("~/clean-assets/css/vs2015.css");
-    SmidgeHelper.RequiresCss("~/clean-assets/css/highlightjs-copy.min.css");
-    SmidgeHelper.RequiresJs("~/clean-assets/js/highlight.min.js");
-    SmidgeHelper.RequiresJs("~/clean-assets/js/highlightjs-copy.min.js");
-    SmidgeHelper.RequiresJs("~/clean-assets/js/initHighlight.js");
 }
 
 <div class="row clearfix @(spacingClasses)">

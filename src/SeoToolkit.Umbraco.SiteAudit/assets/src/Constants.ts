@@ -1,0 +1,1 @@
+export const SEOTOOLKIT_SITEAUDIT_ENTITY = "seoToolkit-siteAudit";

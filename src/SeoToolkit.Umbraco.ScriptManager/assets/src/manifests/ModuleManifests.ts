@@ -15,7 +15,7 @@ const ScriptManagerTreeItem: ManifestTreeItem = {
 const ScriptManagerWorkspace: any = {
     type: 'workspace',
     alias: 'seoToolkit.module.workspace.scriptManager',
-    name: 'SeoToolkit RobotsTxt ScriptManager',
+    name: 'SeoToolkit Workspace ScriptManager',
     element: () => import('../workspaces/ScriptManagerModuleWorkspace.element'),
     api: () => import('../workspaces/ScriptManagerModuleContext'),
     meta: {

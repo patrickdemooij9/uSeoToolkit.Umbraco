@@ -36,7 +36,7 @@ namespace SeoToolkit.Umbraco.SiteAudit.Core.Composers
             builder.Services.AddSingleton(typeof(ISiteAuditScheduler), typeof(SiteAuditScheduler));
 
             //builder.Services.AddHostedService<ScheduledSiteAuditTask>();
-            builder.Services.AddHostedService<SiteAuditHubClientCleanup>();
+            //builder.Services.AddHostedService<SiteAuditHubClientCleanup>();
 
             builder.WithCollectionBuilder<SiteAuditCheckCollectionBuilder>()
                 .Append<BrokenLinkCheck>()
@@ -49,9 +49,9 @@ namespace SeoToolkit.Umbraco.SiteAudit.Core.Composers
 
             builder.Services.Configure<SiteAuditAppSettingsModel>(builder.Config.GetSection("SeoToolkit:SiteAudit"));
 
-            builder.Services.AddSingleton<SiteAuditHubRoutes>();
-            builder.Services.AddSignalR();
-            builder.Services.AddHubSignalR();
+            //builder.Services.AddSingleton<SiteAuditHubRoutes>();
+            //builder.Services.AddSignalR();
+            //builder.Services.AddHubSignalR();
 
             builder.Services.AddHttpClient<BrokenImageCheck>()
                 .ConfigurePrimaryHttpMessageHandler(x =>

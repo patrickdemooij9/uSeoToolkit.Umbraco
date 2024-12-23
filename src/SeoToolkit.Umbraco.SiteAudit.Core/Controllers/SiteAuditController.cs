@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Web;
-using Umbraco.Cms.Web.Common.Attributes;
 using Umbraco.Extensions;
 using SeoToolkit.Umbraco.Common.Core.Services.SettingsService;
 using SeoToolkit.Umbraco.SiteAudit.Core.Enums;
@@ -17,36 +16,36 @@ using SeoToolkit.Umbraco.SiteAudit.Core.Models.Config;
 using SeoToolkit.Umbraco.SiteAudit.Core.Models.PostModels;
 using SeoToolkit.Umbraco.SiteAudit.Core.Models.ViewModels;
 using SeoToolkit.Umbraco.SiteAudit.Core.Services;
-using Umbraco.Cms.Api.Management.Controllers;
+using SeoToolkit.Umbraco.Common.Core.Controllers;
+using Umbraco.Cms.Web.Common.Routing;
 
 namespace SeoToolkit.Umbraco.SiteAudit.Core.Controllers
 {
-    [PluginController("SeoToolkit")]
-    public class SiteAuditController : ManagementApiControllerBase
+    [ApiExplorerSettings(GroupName = "seoToolkitSiteAudit")]
+    [BackOfficeRoute("seoToolkitSiteAudit")]
+    public class SiteAuditController : SeoToolkitControllerBase
     {
         private readonly SiteAuditService _siteAuditService;
         private readonly ISiteCheckService _siteCheckService;
-        private readonly SiteAuditHubClientService _siteAuditHubClient;
         private readonly ISettingsService<SiteAuditConfigModel> _settingsService;
         private readonly ILogger<SiteAuditController> _logger;
         private readonly IUmbracoContextFactory _umbracoContextFactory;
 
         public SiteAuditController(SiteAuditService siteAuditService,
             ISiteCheckService siteCheckService,
-            SiteAuditHubClientService siteAuditHubClient,
             ISettingsService<SiteAuditConfigModel> settingsService,
             ILogger<SiteAuditController> logger,
             IUmbracoContextFactory umbracoContextFactory)
         {
             _siteAuditService = siteAuditService;
             _siteCheckService = siteCheckService;
-            _siteAuditHubClient = siteAuditHubClient;
             _settingsService = settingsService;
             _logger = logger;
             _umbracoContextFactory = umbracoContextFactory;
         }
 
-        [HttpGet]
+        [HttpGet("siteAudit")]
+        [ProducesResponseType(typeof(SiteAuditDetailViewModel), 200)]
         public IActionResult Get(int id)
         {
             var model = _siteAuditService.Get(id);
@@ -56,7 +55,7 @@ namespace SeoToolkit.Umbraco.SiteAudit.Core.Controllers
             return new JsonResult(new SiteAuditDetailViewModel(model));
         }
 
-        [HttpPost]
+        [HttpDelete("siteAudit")]
         public IActionResult Delete(DeleteAuditsPostModel postModel)
         {
             foreach (var id in postModel.Ids)
@@ -64,18 +63,11 @@ namespace SeoToolkit.Umbraco.SiteAudit.Core.Controllers
                 _siteAuditService.Delete(id);
             }
 
-            return GetAll();
+            return Ok();
         }
 
-        //SignalR stuff
-        [HttpGet]
-        public IActionResult Connect(int auditId, string clientId)
-        {
-            _siteAuditHubClient.AssignClient(clientId, auditId);
-            return Get(auditId);
-        }
-
-        [HttpGet]
+        [HttpGet("siteAudits")]
+        [ProducesResponseType(typeof(SiteAuditOverviewViewModel[]), 200)]
         public IActionResult GetAll()
         {
             var test = _settingsService.GetSettings();
@@ -88,7 +80,8 @@ namespace SeoToolkit.Umbraco.SiteAudit.Core.Controllers
             }));
         }
 
-        [HttpGet]
+        [HttpGet("siteAuditConfiguration")]
+        [ProducesResponseType(typeof(SiteAuditCreateConfigViewModel), 200)]
         public IActionResult GetConfiguration()
         {
             var config = _settingsService.GetSettings();
@@ -100,7 +93,8 @@ namespace SeoToolkit.Umbraco.SiteAudit.Core.Controllers
             });
         }
 
-        [HttpPost]
+        [HttpPost("siteAudit")]
+        [ProducesResponseType(typeof(int), 200)]
         public IActionResult CreateAudit([FromBody] CreateAuditPostModel postModel)
         {
             var config = _settingsService.GetSettings();
@@ -141,7 +135,7 @@ namespace SeoToolkit.Umbraco.SiteAudit.Core.Controllers
             return Ok(model.Id);
         }
 
-        [HttpPost]
+        [HttpPost("stopSiteAudit")]
         public IActionResult StopAudit(StopAuditPostModel model)
         {
             _siteAuditService.StopSiteAudit(model.Id);
