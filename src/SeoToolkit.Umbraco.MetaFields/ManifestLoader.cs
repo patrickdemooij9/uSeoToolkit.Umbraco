@@ -22,11 +22,10 @@ namespace SeoToolkit.Umbraco.MetaFields
     {
         public Task<IEnumerable<PackageManifest>> ReadPackageManifestsAsync()
         {
-
             var entrypoint = JsonNode.Parse(@"{""name"": ""seoToolkit.metaFields.entrypoint"",
             ""alias"": ""SeoToolkit.MetaFields.EntryPoint"",
             ""type"": ""entryPoint"",
-            ""js"": ""/App_Plugins/SeoToolkit/MetaFields.js""}");
+            ""js"": ""/App_Plugins/SeoToolkit/entry/metaFields/metaFields.js""}");
 
             List<PackageManifest> manifest = [
                 new PackageManifest

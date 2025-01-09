@@ -15,11 +15,14 @@ using SeoToolkit.Umbraco.MetaFields.Core.Models.SeoField.ViewModels;
 using SeoToolkit.Umbraco.MetaFields.Core.Models.SeoSettings.PostModels;
 using SeoToolkit.Umbraco.MetaFields.Core.Services.DocumentTypeSettings;
 using Umbraco.Cms.Api.Management.Controllers;
+using SeoToolkit.Umbraco.Common.Core.Controllers;
+using Umbraco.Cms.Web.Common.Routing;
 
 namespace SeoToolkit.Umbraco.MetaFields.Core.Controllers
 {
-    [PluginController("SeoToolkit")]
-    public class MetaFieldsController : ManagementApiControllerBase
+    [ApiExplorerSettings(GroupName = "seoToolkitMetaFields")]
+    [BackOfficeRoute("seoToolkitMetaFields")]
+    public class MetaFieldsController : SeoToolkitControllerBase
     {
         private readonly IMetaFieldsService _seoService;
         private readonly IMetaFieldsSettingsService _documentTypeSettingsService;
@@ -55,7 +58,8 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Controllers
             _groupCollection = groupCollection;
         }
 
-        [HttpGet]
+        [HttpGet("metaFields")]
+        [ProducesResponseType(typeof(MetaFieldsSettingsViewModel), 200)]
         public IActionResult Get(int nodeId, string culture)
         {
             EnsureLanguage(culture);
@@ -66,7 +70,7 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Controllers
             var metaTags = content is null ? _seoService.GetEmpty() : _seoService.Get(content, false);
             var userValues = content is null ? new Dictionary<string, object>() : _seoValueService.GetUserValues(nodeId);
 
-            return new JsonResult(new MetaFieldsSettingsViewModel
+            return Ok(new MetaFieldsSettingsViewModel
             {
                 Groups = _groupCollection.Select(it => new SeoFieldGroupViewModel(it)).ToArray(),
                 Fields = metaTags.Fields.Where(it => it.Key.EditEditor != null).Select(it =>
@@ -93,7 +97,8 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Controllers
             });
         }
 
-        [HttpPost]
+        [HttpPost("metaFields")]
+        [ProducesResponseType(typeof(MetaFieldsSettingsViewModel), 200)]
         public IActionResult Save(MetaFieldsSettingsPostViewModel postModel)
         {            
             if (!_seoSettingsService.IsEnabled(postModel.ContentTypeId))

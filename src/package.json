@@ -1,12 +1,13 @@
 {
   "scripts": {
-    "common": "cd SeoToolkit.Umbraco.Common/assets && npm run build --watch",
-    "robotsTxt": "cd SeoToolkit.Umbraco.RobotsTxt/assets && npm run build --watch",
-    "scriptManager": "cd SeoToolkit.Umbraco.ScriptManager/assets && npm run build --watch",
-    "redirect": "cd SeoToolkit.Umbraco.Redirects/assets && npm run build --watch",
-    "sitemap": "cd SeoToolkit.Umbraco.Sitemap/assets && npm run build --watch",
-    "siteAudit": "cd SeoToolkit.Umbraco.SiteAudit/assets && npm run build --watch",
-    "start": "concurrently \"npm run common\" \"npm run robotsTxt\" \"npm run scriptManager\" \"npm run redirect\" \"npm run sitemap\" \"npm run siteAudit\""
+    "common": "cd SeoToolkit.Umbraco.Common/assets && npm run build",
+    "robotsTxt": "cd SeoToolkit.Umbraco.RobotsTxt/assets && npm run build",
+    "scriptManager": "cd SeoToolkit.Umbraco.ScriptManager/assets && npm run build",
+    "redirect": "cd SeoToolkit.Umbraco.Redirects/assets && npm run build",
+    "sitemap": "cd SeoToolkit.Umbraco.Sitemap/assets && npm run build",
+    "siteAudit": "cd SeoToolkit.Umbraco.SiteAudit/assets && npm run build",
+    "metaFields": "cd SeoToolkit.Umbraco.MetaFields/assets && npm run build",
+    "start": "concurrently \"npm run common\" \"npm run robotsTxt\" \"npm run scriptManager\" \"npm run redirect\" \"npm run sitemap\" \"npm run siteAudit\" \"npm run metaFields\""
   },
   "dependencies": {
     "concurrently": "^9.0.1"

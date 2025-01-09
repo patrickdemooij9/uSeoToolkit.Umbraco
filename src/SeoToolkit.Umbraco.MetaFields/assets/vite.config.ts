@@ -5,9 +5,10 @@ export default defineConfig({
         lib: {
             entry: "src/index.ts", // your web component source file
             formats: ["es"],
+            fileName: "metaFields"
         },
-        outDir: "../wwwroot", 
-        emptyOutDir: false,
+        outDir: "../wwwroot/entry/metaFields", 
+        emptyOutDir: true,
         sourcemap: true,
         rollupOptions: {
             external: [/^@umbraco/],

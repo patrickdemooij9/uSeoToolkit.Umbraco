@@ -1,9 +1,20 @@
 import { UmbEntryPointOnInit } from '@umbraco-cms/backoffice/extension-api';
+import { UMB_AUTH_CONTEXT } from '@umbraco-cms/backoffice/auth';
+import { OpenAPI } from './api';
+import { DocumentManifests } from './manifests/DocumentManifests';
 
-// load up the things here. 
+export const onInit: UmbEntryPointOnInit = (host, extensionRegistry) => {
 
-export const onInit: UmbEntryPointOnInit = (_host) => {
+    host.consumeContext(UMB_AUTH_CONTEXT, (auth) => {
 
-    // register them here. 
-    // extensionRegistry.registerMany(...)
+        const config = auth.getOpenApiConfiguration();
+
+        OpenAPI.BASE = config.base;
+        OpenAPI.WITH_CREDENTIALS = config.withCredentials;
+        OpenAPI.CREDENTIALS = config.credentials;
+        OpenAPI.TOKEN = config.token;
+
+    });
+
+    extensionRegistry.registerMany(DocumentManifests);
 };

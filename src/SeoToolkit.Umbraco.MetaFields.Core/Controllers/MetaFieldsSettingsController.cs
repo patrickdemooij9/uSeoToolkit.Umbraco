@@ -1,19 +1,21 @@
 ﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Umbraco.Cms.Core.Mapping;
-using Umbraco.Cms.Web.Common.Attributes;
 using SeoToolkit.Umbraco.MetaFields.Core.Collections;
 using SeoToolkit.Umbraco.MetaFields.Core.Models.DocumentTypeSettings.Business;
 using SeoToolkit.Umbraco.MetaFields.Core.Models.DocumentTypeSettings.PostModels;
 using SeoToolkit.Umbraco.MetaFields.Core.Models.DocumentTypeSettings.ViewModels;
 using SeoToolkit.Umbraco.MetaFields.Core.Models.SeoField.ViewModels;
 using SeoToolkit.Umbraco.MetaFields.Core.Services.DocumentTypeSettings;
-using Umbraco.Cms.Api.Management.Controllers;
+using SeoToolkit.Umbraco.Common.Core.Controllers;
+using Umbraco.Cms.Web.Common.Routing;
+using SeoToolkit.Umbraco.MetaFields.Core.Common.FieldProviders;
 
 namespace SeoToolkit.Umbraco.MetaFields.Core.Controllers
 {
-    [PluginController("SeoToolkit")]
-    public class MetaFieldsSettingsController : ManagementApiControllerBase
+    [ApiExplorerSettings(GroupName = "seoToolkitMetaFields")]
+    [BackOfficeRoute("seoToolkitMetaFieldsSettings")]
+    public class MetaFieldsSettingsController : SeoToolkitControllerBase
     {
         private readonly IMetaFieldsSettingsService _documentTypeSettingsService;
         private readonly SeoFieldCollection _seoFieldCollection;
@@ -28,26 +30,28 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Controllers
             _umbracoMapper = umbracoMapper;
         }
 
-        [HttpGet]
+        [HttpGet("metaFieldsSettings")]
+        [ProducesResponseType(typeof(DocumentTypeSettingsViewModel), 200)]
         public IActionResult Get(int nodeId)
         {
             var model = _documentTypeSettingsService.Get(nodeId);
             var content = model != null ? 
                 new DocumentTypeSettingsContentViewModel(model, _seoFieldCollection.GetAll().Select(it => new SeoFieldViewModel(it, model.Get(it.Alias))).ToArray()) :
                 new DocumentTypeSettingsContentViewModel(_seoFieldCollection.GetAll().Select(it => new SeoFieldViewModel(it)).ToArray());
-            return new JsonResult(new DocumentTypeSettingsViewModel
+            return Ok(new DocumentTypeSettingsViewModel
             {
                 ContentModel = content,
             });
         }
 
-        [HttpGet]
+        [HttpGet("metaFieldsAdditionalFields")]
+        [ProducesResponseType(typeof(FieldItemViewModel[]), 200)]
         public IActionResult GetAdditionalFields()
         {
-            return new JsonResult(_documentTypeSettingsService.GetAdditionalFieldItems());
+            return Ok(_documentTypeSettingsService.GetAdditionalFieldItems());
         }
 
-        [HttpPost]
+        [HttpPost("metaFieldsSettings")]
         public IActionResult Save(DocumentTypeSettingsPostViewModel postModel)
         {
             _documentTypeSettingsService.Set(_umbracoMapper.Map<DocumentTypeSettingsPostViewModel, DocumentTypeSettingsDto>(postModel));
