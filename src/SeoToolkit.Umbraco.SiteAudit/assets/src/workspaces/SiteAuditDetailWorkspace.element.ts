@@ -9,13 +9,21 @@ import SiteAuditDetailContext, {
   ST_SITEAUDIT_DETAIL_TOKEN_CONTEXT,
 } from "./SiteAuditDetailContext";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
-import { SiteAuditDetailViewModel } from "../api";
+import { SiteAuditDetailViewModel, SiteAuditPageDetailViewModel } from "../api";
 import SiteAuditCheckResult from "../models/SiteAuditCheckResultModel";
+import { UUIPaginationEvent } from "@umbraco-cms/backoffice/external/uui";
 
 enum SelectedPageType {
   AllPages,
   AllChecks,
   FilteredCheck,
+}
+
+interface PageItem {
+  data: SiteAuditPageDetailViewModel;
+  open: boolean;
+  errors: number;
+  warnings: number;
 }
 
 @customElement("seotoolkit-site-audit-detail")
@@ -36,6 +44,9 @@ export default class SiteAuditDetailWorkspace extends UmbLitElement {
 
   @state()
   _pageIndex = 0;
+
+  @state()
+  _openedPages: string[] = [];
 
   @state()
   _checkResults: SiteAuditCheckResult[] = [];
@@ -87,24 +98,63 @@ export default class SiteAuditDetailWorkspace extends UmbLitElement {
     return this._model?.checks?.find((item) => item.id == id);
   }
 
-  getPagesPaged() {
+  getPagesPaged(): PageItem[] {
     return (
-      this._model?.pagesCrawled?.slice(
-        this._pageIndex * 10,
-        this._pageIndex * 10 + 10
-      ) ?? []
+      this._model?.pagesCrawled
+        ?.slice(this._pageIndex * 10, this._pageIndex * 10 + 10)
+        .map<PageItem>((page) => ({
+          data: page,
+          open: this.#pageIsOpen(page),
+          errors:
+            page.results?.reduce(
+              (prev, cur) => prev + (cur.isError ? 1 : 0),
+              0
+            ) ?? 0,
+          warnings:
+            page.results?.reduce(
+              (prev, cur) => prev + (cur.isWarning ? 1 : 0),
+              0
+            ) ?? 0,
+        })) ?? []
     );
   }
 
   #back() {
-    location.href = "/umbraco/seotoolkit";
+    location.href =
+      "/umbraco/section/SeoToolkit/workspace/seoToolkit-siteAudit/overview";
+  }
+
+  #openPage(page: SiteAuditPageDetailViewModel) {
+    this._openedPages.push(page.url!);
+    this.requestUpdate();
+  }
+
+  #closePage(page: SiteAuditPageDetailViewModel) {
+    this._openedPages.splice(this._openedPages.indexOf(page.url!), 1);
+    this.requestUpdate();
+  }
+
+  #pageIsOpen(page: SiteAuditPageDetailViewModel) {
+    return this._openedPages.includes(page.url!);
+  }
+
+  handlePageUpdate(event: UUIPaginationEvent) {
+    this._pageIndex = event.target.current - 1;
+  }
+
+  handleDeleteAudit() {
+    this.#context?.deleteAudit();
+  }
+
+  handleStopAudit() {
+    this.#context?.stopAudit();
   }
 
   override render() {
     return html`
       <div class="site-audit-detail">
         <div class="button-bar">
-          <div class="left">
+          <div>
             <uui-button
               slot="actions"
               id="back"
@@ -115,7 +165,32 @@ export default class SiteAuditDetailWorkspace extends UmbLitElement {
               Back
             </uui-button>
           </div>
-          <div class="right">Dropdown here</div>
+          <umb-dropdown>
+            <span slot="label">Actions</span>
+            <div id="dropdown-layout">
+              <uui-button
+                label="Delete"
+                look="default"
+                compact
+                @click=${this.handleDeleteAudit}
+              >
+                Delete
+              </uui-button>
+              ${when(
+                this._model?.status == "Running",
+                () => html`
+                  <uui-button
+                    label="Stop audit"
+                    look="default"
+                    compact
+                    @click=${this.handleStopAudit}
+                  >
+                    Stop audit
+                  </uui-button>
+                `
+              )}
+            </div>
+          </umb-dropdown>
         </div>
         <uui-box headline="${this._model?.name!}">
           <div slot="header" class="status-header">
@@ -181,101 +256,121 @@ export default class SiteAuditDetailWorkspace extends UmbLitElement {
           </div>
         </uui-box>
 
-        <div class="navigation-buttons">
-          <uui-button label="All pages" look="primary">
-            All pages
-          </uui-button>
-          <uui-button label="All check" look="primary">
-            All checks
-          </uui-button>
-        </div>
+        <!--Todo: Implement these-->
+        <!--<div class="navigation-buttons">
+          <uui-button label="All pages" look="primary"> All pages </uui-button>
+          <uui-button label="All check" look="primary"> All checks </uui-button>
+        </div>-->
 
         ${when(
           this._pageType === SelectedPageType.AllPages,
           () => html`
-            <uui-box headline="All pages">
+            <uui-box headline="All pages" class="pages-container">
               <div>
                 ${repeat(
                   this.getPagesPaged(),
-                  (item) => item.url,
+                  (item) => item.data.url,
                   (item) => html`
                 <div
-                      class="umb-panel-group__details-status"
-                      style="justify-content: space-between;"
+                      class="site-audit-page"
                     >
-                      <div style="flex: 1;">${item.url}</div>
-                      <div style="flex: 1;">
+                      <div>${item.data.url}</div>
+                      <div>
                         Status:
                         <span
                           ng-class="{'error-status': page.statusCode < 200 || page.statusCode > 299}"
-                          >${item.statusCode}</span
+                          >${item.data.statusCode}</span
                         >
                       </div>
                       <div
-                        class="umb-healthcheck-messages"
-                        style="margin: 0; flex: 1;"
+                        class="page-health"
                       >
-                        <div
-                          class="umb-healthcheck-message"
-                          ng-show="page.errors > 0"
-                          style="margin: 0;"
-                        >
-                          <i
-                            class="icon-delete color-red"
-                            aria-hidden="true"
-                          ></i>
-                          ${item.results?.reduce(
-                            (prev, cur) => prev + (cur.isError ? 1 : 0),
-                            0
-                          )}
-                        </div>
-                        <div
-                          class="umb-healthcheck-message"
-                          ng-show="page.warnings > 0"
-                          style="margin: 0;"
-                        >
-                          <i
-                            class="icon-info color-orange"
-                            aria-hidden="true"
-                          ></i>
-                          ${item.results?.reduce(
-                            (prev, cur) => prev + (cur.isWarning ? 1 : 0),
-                            0
-                          )}
-                        </div>
+                      ${when(
+                        item.errors > 0,
+                        () => html`
+                          <div class="flex align-center">
+                            <uui-icon
+                              name="icon-delete"
+                              style="color: var(--uui-color-danger);"
+                            ></uui-icon>
+                            ${item.errors}
+                          </div>
+                        `
+                      )}
+                        
+                        ${when(
+                          item.warnings > 0,
+                          () => html`
+                            <div class="flex align-center">
+                              <uui-icon
+                                name="icon-info"
+                                style="color: var(--uui-color-warning);"
+                              ></uui-icon>
+                              ${item.warnings}
+                            </div>
+                          `
+                        )}
                       </div>
-                      <a ng-click="vm.openPage(page)" ng-show="!page.show">
-                        Open
-                      </a>
-                      <a ng-click="vm.closePage(page)" ng-show="page.show">
-                        Close
-                      </a>
+                      ${when(
+                        item.open,
+                        () => html`
+                          <a
+                            class="clickable"
+                            @click="${() => this.#closePage(item.data)}"
+                          >
+                            Close
+                          </a>
+                        `,
+                        () => html`
+                          <a
+                            class="clickable"
+                            @click="${() => this.#openPage(item.data)}"
+                          >
+                            Open
+                          </a>
+                        `
+                      )}
                     </div>
-                    <div
-                      class="umb-panel-group__details-status"
-                      ng-show="page.show"
-                      style="padding: 0 20px 15px 40px; border-top: none; display: block;"
-                    >
-                    ${repeat(
-                      item.results ?? [],
-                      (result) => result.checkId,
-                      (result) => result.message
+                    ${when(
+                      item.open,
+                      () => html`
+                        <div class="result-container">
+                          ${repeat(
+                            item.data.results ?? [],
+                            (result) => result.checkId,
+                            (result) => html` <div>${result.message}</div> `
+                          )}
+                          ${when(
+                            item.data.results?.length == 0,
+                            () => html` <div>No results for this page!</div> `
+                          )}
+                        </div>
+                      `
                     )}
-                      
-                      <div ng-show="page.results.length == 0">
-                        No results for this page!
-                      </div>
-                    </div>
+                    
                   </div>
               `
                 )}
               </div>
+              ${when(
+                this._model!.pagesCrawled!.length > 10,
+                () => html`
+                  <div class="pagination">
+                    <uui-pagination
+                      total=${this._model!.pagesCrawled!.length / 10 + 1}
+                      current=${this._pageIndex + 1}
+                      @change=${this.handlePageUpdate}
+                    >
+                    </uui-pagination>
+                  </div>
+                `
+              )}
             </uui-box>
           `
         )}
       </div>
 
-      <div class="umb-dashboard umb-scrollable row-fluid">
+      <!--<div class="umb-dashboard umb-scrollable row-fluid">
         <div class="umb-dashboard__content">
           <div ng-if="!vm.isLoading">
             <umb-editor-sub-header>
@@ -372,7 +467,6 @@ export default class SiteAuditDetailWorkspace extends UmbLitElement {
                     >
                   </div>
                 </div>
-                <!--<canvas id="myChart" ng-init="vm.initChart()" width="400" height="400"></canvas>-->
               </div>
             </umb-box>
             <div class="umb-packages-section">
@@ -417,10 +511,7 @@ export default class SiteAuditDetailWorkspace extends UmbLitElement {
               <div class="umb-panel-group__details-checks">
                 <div class="umb-panel-group__details-check">
                   <div ng-repeat="page in vm.pages">
-                    <div
-                      class="umb-panel-group__details-status"
-                      style="justify-content: space-between; padding-left: 20px; padding-right: 20px;"
-                    >
+                    <div class="site-audit-page">
                       <div style="flex: 1;">{{page.url}}</div>
                       <div style="flex: 1;">
                         Status:
@@ -634,6 +725,7 @@ export default class SiteAuditDetailWorkspace extends UmbLitElement {
           </div>
         </div>
       </div>
+      -->
     `;
   }
 
@@ -645,21 +737,61 @@ export default class SiteAuditDetailWorkspace extends UmbLitElement {
         padding: 20px;
       }
 
+      #dropdown-layout {
+        padding: 10px 6px;
+        display: flex;
+        flex-direction: column;
+        --uui-button-content-align: left;
+      }
+
+      .button-bar {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+
       .status-header {
         display: flex;
         justify-content: flex-end;
         width: 100%;
       }
 
-      .navigation-buttons{
+      .navigation-buttons {
         width: 100%;
         display: flex;
         gap: 8px;
         margin: 20px 0 20px 0;
-        
+
         > * {
           flex: 1;
         }
+      }
+
+      .site-audit-page {
+        display: flex;
+        justify-content: space-between;
+
+        > div {
+          flex: 1;
+        }
+      }
+
+      .pages-container {
+        margin-bottom: 100px; //Without this, the page isn't really scrollable and I have no clue why...
+      }
+
+      .result-container {
+        display: flex;
+        flex-direction: column;
+        padding-bottom: 20px;
+      }
+
+      .page-health {
+        display: flex;
+      }
+
+      .pagination {
+        margin: 20px 0;
       }
 
       .flex {
@@ -672,6 +804,10 @@ export default class SiteAuditDetailWorkspace extends UmbLitElement {
 
       .align-center {
         align-items: center;
+      }
+
+      .clickable {
+        cursor: pointer;
       }
     `,
   ];

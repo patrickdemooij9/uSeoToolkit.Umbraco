@@ -52,6 +52,10 @@ export default class SiteAuditRepository
     return this.#source.delete(ids);
   }
 
+  async stopAudit(id: number){
+    return this.#source.stopAudit(id);
+  }
+
   async getConfiguration() {
     return this.#source.getConfiguration();
   }

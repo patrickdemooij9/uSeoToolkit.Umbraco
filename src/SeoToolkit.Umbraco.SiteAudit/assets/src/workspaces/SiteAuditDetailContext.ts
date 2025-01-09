@@ -20,6 +20,7 @@ export default class SiteAuditDetailContext
 
   routes = new UmbWorkspaceRouteManager(this);
   workspaceAlias = "seoToolkit.siteAudit.detail";
+  runHeartbeat = false;
 
   #model = new UmbObjectState<SiteAuditDetailViewModel>({
     id: 0,
@@ -39,6 +40,7 @@ export default class SiteAuditDetailContext
         path: "detail/:unique",
         component: SiteAuditDetailWorkspace,
         setup: (_component, info) => {
+          this.runHeartbeat = true;
           this.heartbeat(info.match.params.unique);
         },
       },
@@ -47,6 +49,9 @@ export default class SiteAuditDetailContext
 
   heartbeat(unique: string) {
     setTimeout(() => {
+      if (!this.runHeartbeat) {
+        return;
+      }
       this.heartbeat(unique);
     }, 1000);
     this.loadData(unique);
@@ -56,6 +61,21 @@ export default class SiteAuditDetailContext
     this.#repository.get(Number.parseInt(unique)).then((res) => {
       this.#model.update(res.data!);
     });
+  }
+
+  deleteAudit() {
+    this.#repository.delete([this.#model.getValue().id]).then(() => {
+      location.href =
+        "/umbraco/section/SeoToolkit/workspace/seoToolkit-siteAudit/overview";
+    });
+  }
+
+  stopAudit() {
+    this.#repository.stopAudit(this.#model.getValue().id);
+  }
+
+  override destroy() {
+    this.runHeartbeat = false;
   }
 
   getEntityType(): string {

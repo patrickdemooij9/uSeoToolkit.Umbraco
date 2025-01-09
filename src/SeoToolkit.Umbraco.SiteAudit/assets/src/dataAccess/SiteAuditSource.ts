@@ -45,6 +45,17 @@ export class SiteAuditSource {
     );
   }
 
+  async stopAudit(id: number) {
+    return await tryExecuteAndNotify(
+      this.#host,
+      SeoToolkitSiteAuditService.postUmbracoSeoToolkitSiteAuditStopSiteAudit({
+        requestBody: {
+          id: id,
+        },
+      })
+    );
+  }
+
   async getConfiguration() {
     return await tryExecuteAndNotify(
       this.#host,
