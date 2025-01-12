@@ -155,8 +155,8 @@ export const DocumentTypeSettingsPostViewModelSchema = {
     type: 'object',
     properties: {
         nodeId: {
-            type: 'integer',
-            format: 'int32'
+            type: 'string',
+            format: 'uuid'
         },
         enableSeoSettings: {
             type: 'boolean'
@@ -174,8 +174,8 @@ export const DocumentTypeSettingsPostViewModelSchema = {
             nullable: true
         },
         inheritanceId: {
-            type: 'integer',
-            format: 'int32',
+            type: 'string',
+            format: 'uuid',
             nullable: true
         }
     },

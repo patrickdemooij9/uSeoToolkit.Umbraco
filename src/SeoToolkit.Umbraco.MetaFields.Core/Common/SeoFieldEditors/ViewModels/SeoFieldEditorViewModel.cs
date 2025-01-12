@@ -14,7 +14,7 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Models.SeoFieldEditors.ViewModels
 
         public SeoFieldEditorViewModel(ISeoFieldEditor editor)
         {
-            View = editor.View;
+            View = editor.PropertyView;
             Config = editor.Config;
         }
     }

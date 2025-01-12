@@ -20,7 +20,7 @@ public class FacebookIdField : SeoField<string>
 
     public FacebookIdField()
     {
-        var propertyEditor = new SeoFieldPropertyEditor("textbox");
+        var propertyEditor = new SeoFieldPropertyEditor("Umb.PropertyEditorUi.TextBox");
         propertyEditor.SetExtraInformation("Provide the Facebook app_id associated with this content");
 
         Editor = propertyEditor;

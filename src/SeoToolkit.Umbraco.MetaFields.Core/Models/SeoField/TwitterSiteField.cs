@@ -20,7 +20,7 @@ public class TwitterSiteField : SeoField<string>
 
     public TwitterSiteField()
     {
-        var propertyEditor = new SeoFieldPropertyEditor("textbox");
+        var propertyEditor = new SeoFieldPropertyEditor("Umb.PropertyEditorUi.TextBox");
         propertyEditor.SetExtraInformation("Provide the Twitter username of the website");
 
         Editor = propertyEditor;

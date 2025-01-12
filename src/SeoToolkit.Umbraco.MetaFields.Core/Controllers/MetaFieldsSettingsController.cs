@@ -10,6 +10,8 @@ using SeoToolkit.Umbraco.MetaFields.Core.Services.DocumentTypeSettings;
 using SeoToolkit.Umbraco.Common.Core.Controllers;
 using Umbraco.Cms.Web.Common.Routing;
 using SeoToolkit.Umbraco.MetaFields.Core.Common.FieldProviders;
+using System;
+using Umbraco.Cms.Core.Web;
 
 namespace SeoToolkit.Umbraco.MetaFields.Core.Controllers
 {
@@ -20,24 +22,42 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Controllers
         private readonly IMetaFieldsSettingsService _documentTypeSettingsService;
         private readonly SeoFieldCollection _seoFieldCollection;
         private readonly IUmbracoMapper _umbracoMapper;
+        private readonly IUmbracoContextFactory _umbracoContextFactory;
 
         public MetaFieldsSettingsController(IMetaFieldsSettingsService documentTypeSettingsService,
             SeoFieldCollection seoFieldCollection,
-            IUmbracoMapper umbracoMapper)
+            IUmbracoMapper umbracoMapper,
+            IUmbracoContextFactory umbracoContextFactory)
         {
             _documentTypeSettingsService = documentTypeSettingsService;
             _seoFieldCollection = seoFieldCollection;
             _umbracoMapper = umbracoMapper;
+            _umbracoContextFactory = umbracoContextFactory;
         }
 
         [HttpGet("metaFieldsSettings")]
         [ProducesResponseType(typeof(DocumentTypeSettingsViewModel), 200)]
-        public IActionResult Get(int nodeId)
+        public IActionResult Get(Guid? nodeId)
         {
-            var model = _documentTypeSettingsService.Get(nodeId);
-            var content = model != null ? 
-                new DocumentTypeSettingsContentViewModel(model, _seoFieldCollection.GetAll().Select(it => new SeoFieldViewModel(it, model.Get(it.Alias))).ToArray()) :
-                new DocumentTypeSettingsContentViewModel(_seoFieldCollection.GetAll().Select(it => new SeoFieldViewModel(it)).ToArray());
+            DocumentTypeSettingsContentViewModel content = null;
+            if (nodeId != null)
+            {
+                using var ctx = _umbracoContextFactory.EnsureUmbracoContext();
+                var contentType = ctx.UmbracoContext.Content.GetContentType(nodeId.Value);
+                if (contentType != null)
+                {
+                    var model = _documentTypeSettingsService.Get(contentType.Id);
+                    if (model != null)
+                    {
+                        content = new DocumentTypeSettingsContentViewModel(model, _seoFieldCollection.GetAll().Select(it => new SeoFieldViewModel(it, model.Get(it.Alias))).ToArray());
+                    }
+                }
+            }
+            if (content is null)
+            {
+                content = new DocumentTypeSettingsContentViewModel(_seoFieldCollection.GetAll().Select(it => new SeoFieldViewModel(it)).ToArray());
+            }
+
             return Ok(new DocumentTypeSettingsViewModel
             {
                 ContentModel = content,

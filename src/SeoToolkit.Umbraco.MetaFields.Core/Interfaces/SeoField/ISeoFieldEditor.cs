@@ -5,7 +5,7 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Interfaces.SeoField
 {
     public interface ISeoFieldEditor
     {
-        string View { get; }
+        string PropertyView { get; }
         Dictionary<string, object> Config { get; }
         IEditorValueConverter ValueConverter { get; }
     }

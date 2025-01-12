@@ -9,7 +9,7 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Common.SeoFieldEditors
     {
         private const string PreValueKey = "isPreValue";
 
-        public string View => "/App_Plugins/SeoToolkit/MetaFields/Interface/SeoFieldEditors/PropertyEditor/propertyEditor.html";
+        public string PropertyView { get; }
 
         public Dictionary<string, object> Config { get; }
         public IEditorValueConverter ValueConverter { get; }
@@ -29,11 +29,9 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Common.SeoFieldEditors
         public SeoFieldPropertyEditor(string propertyView, IEditorValueConverter valueConverter)
         {
             ValueConverter = valueConverter;
+            PropertyView = propertyView;
 
-            Config = new Dictionary<string, object>
-            {
-                {"view", propertyView}
-            };
+            Config = [];
         }
 
         public void SetExtraInformation(string information)

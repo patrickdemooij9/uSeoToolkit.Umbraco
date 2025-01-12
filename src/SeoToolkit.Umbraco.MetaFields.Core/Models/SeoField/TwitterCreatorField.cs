@@ -20,7 +20,7 @@ public class TwitterCreatorField : SeoField<string>
 
     public TwitterCreatorField()
     {
-        var propertyEditor = new SeoFieldPropertyEditor("textbox");
+        var propertyEditor = new SeoFieldPropertyEditor("Umb.PropertyEditorUi.TextBox");
         propertyEditor.SetExtraInformation("Provide the Twitter username of the content creator");
 
         Editor = propertyEditor;

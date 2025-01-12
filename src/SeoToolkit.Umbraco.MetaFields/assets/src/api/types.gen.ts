@@ -41,12 +41,12 @@ export type DocumentTypeSettingsInheritanceViewModel = {
 };
 
 export type DocumentTypeSettingsPostViewModel = {
-    nodeId: number;
+    nodeId: string;
     enableSeoSettings: boolean;
     fields?: {
         [key: string]: ((DocumentTypeValuePostViewModel) | null);
     } | null;
-    inheritanceId?: (number) | null;
+    inheritanceId?: (string) | null;
 };
 
 export type DocumentTypeSettingsViewModel = {
@@ -372,7 +372,7 @@ export type PostUmbracoSeoToolkitMetaFieldsMetaFieldsResponse = ((MetaFieldsSett
 export type GetUmbracoSeoToolkitMetaFieldsSettingsMetaFieldsAdditionalFieldsResponse = (Array<(FieldItemViewModel)>);
 
 export type GetUmbracoSeoToolkitMetaFieldsSettingsMetaFieldsSettingsData = {
-    nodeId?: number;
+    nodeId?: string;
 };
 
 export type GetUmbracoSeoToolkitMetaFieldsSettingsMetaFieldsSettingsResponse = ((DocumentTypeSettingsViewModel));

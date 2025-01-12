@@ -9,7 +9,7 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Common.SeoFieldEditors
     public class KeywordsFieldPropertyEditor : SeoFieldPropertyEditor, ISeoFieldEditorProcessor
     {
 
-        public KeywordsFieldPropertyEditor() : base("tags", new TextValueConverter())
+        public KeywordsFieldPropertyEditor() : base("Umb.PropertyEditorUi.Tags", new TextValueConverter())
         {
             IsPreValue = false;
             Config.Add("group", "keywords");
