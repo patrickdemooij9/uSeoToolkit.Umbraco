@@ -14,6 +14,9 @@ import {
 } from "@umbraco-cms/backoffice/property";
 import { SeoFieldViewModel } from "../api";
 
+import "./../components/MetaFieldsSettingsField.element";
+import { UmbInputDocumentElement } from "@umbraco-cms/backoffice/document";
+
 @customElement("st-metafield-document-view")
 export default class MetaFieldsDocumentView extends UmbElementMixin(
   LitElement
@@ -26,6 +29,9 @@ export default class MetaFieldsDocumentView extends UmbElementMixin(
   @state()
   _content?: UmbPropertyValueData[] = [];
 
+  @state()
+  _hasInheritance: boolean = false;
+
   constructor() {
     super();
 
@@ -33,7 +39,11 @@ export default class MetaFieldsDocumentView extends UmbElementMixin(
       this.#context = instance;
 
       instance.model.subscribe((value) => {
+        console.log(value);
         this._fields = value.fields ?? [];
+
+        this._hasInheritance = !!value.inheritance && !!value.inheritance.id;
+        console.log(this._hasInheritance);
         this._content = [
           {
             alias: "inheritedBy",
@@ -45,7 +55,8 @@ export default class MetaFieldsDocumentView extends UmbElementMixin(
   }
 
   #onInheritanceSelect(e: Event) {
-    console.log(e);
+    const value = (e.target as UmbInputDocumentElement).value;
+    this.#context?.setInheritance(value);
   }
 
   #onPropertyDataChange(e: Event) {
@@ -63,6 +74,10 @@ export default class MetaFieldsDocumentView extends UmbElementMixin(
     this.#context?.update(newValue);
   }
 
+  #onInheritanceToggle(field: SeoFieldViewModel){
+    this.#context?.toggleInheritance(field.alias!);
+  }
+
   render() {
     return html`
       <uui-box>
@@ -78,25 +93,20 @@ export default class MetaFieldsDocumentView extends UmbElementMixin(
 						@change=${this.#onInheritanceSelect}
 						.selection=${[]}
                         .max=${1}
-						.documentTypesOnly=${true}></umb-input-document-type>
-			</umb-property-layout>
+						.documentTypesOnly=${true}>
+          </umb-input-document-type>
+
+			  </umb-property-layout>
           </umb-property>
           ${repeat(
             this._fields,
             (field) => field.alias,
             (field) => html`
-              <!--<umb-property-layout
-                .label=${field.title!}
-                .description=${field.description!}
-              >
-                <div slot="editor">${JSON.stringify(field)}</div>
-              </umb-property-layout>-->
-              <umb-property
-              .label=${field.title!}
-                .description=${field.description!}
-                .propertyEditorUiAlias=${field.editor!.view!}>
-
-              </umb-property>
+              <st-metafield-settingsfield
+                .field=${field}
+                .hasGlobalInheritance=${this._hasInheritance}
+                @toggle-inheritance=${() => this.#onInheritanceToggle(field)}
+              ></st-metafield-settingsfield>
             `
           )}
         </umb-property-dataset>

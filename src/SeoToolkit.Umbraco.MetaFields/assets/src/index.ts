@@ -2,6 +2,8 @@ import { UmbEntryPointOnInit } from '@umbraco-cms/backoffice/extension-api';
 import { UMB_AUTH_CONTEXT } from '@umbraco-cms/backoffice/auth';
 import { OpenAPI } from './api';
 import { DocumentManifests } from './manifests/DocumentManifests';
+import { PropertyEditorManifests } from './manifests/PropertyEditorManifests';
+import { ModalManifests } from './manifests/ModalManifests';
 
 export const onInit: UmbEntryPointOnInit = (host, extensionRegistry) => {
 
@@ -17,4 +19,6 @@ export const onInit: UmbEntryPointOnInit = (host, extensionRegistry) => {
     });
 
     extensionRegistry.registerMany(DocumentManifests);
+    extensionRegistry.registerMany(PropertyEditorManifests);
+    extensionRegistry.registerMany(ModalManifests);
 };

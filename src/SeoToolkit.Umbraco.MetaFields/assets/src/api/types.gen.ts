@@ -36,8 +36,7 @@ export type DocumentTypeSettingsContentViewModel = {
 };
 
 export type DocumentTypeSettingsInheritanceViewModel = {
-    id: number;
-    name?: (string) | null;
+    id?: (string) | null;
 };
 
 export type DocumentTypeSettingsPostViewModel = {

@@ -19,4 +19,11 @@ export class MetaFieldsSettingsSource {
       )
     );
   }
+
+  async getAdditionalFields(){
+    return await tryExecuteAndNotify(
+      this.#host,
+      SeoToolkitMetaFieldsService.getUmbracoSeoToolkitMetaFieldsSettingsMetaFieldsAdditionalFields()
+    )
+  };
 }

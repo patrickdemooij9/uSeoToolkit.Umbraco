@@ -14,4 +14,8 @@ export class MetaFieldsSettingsRepository extends UmbControllerBase {
   async get(contentTypeGuid: string) {
     return this.#source.get(contentTypeGuid);
   }
+
+  async getAdditionalFields(){
+    return this.#source.getAdditionalFields();
+  }
 }

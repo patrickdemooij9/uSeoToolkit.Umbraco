@@ -23,8 +23,7 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Models.DocumentTypeSettings.ViewMod
         {
             Inheritance = model.Inheritance is null ? null : new DocumentTypeSettingsInheritanceViewModel
             {
-                Id = model.Inheritance.Id,
-                Name = model.Inheritance.Name
+                Id = model.Inheritance.Key,
             };
         }
     }

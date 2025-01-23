@@ -47,6 +47,46 @@ export default class MetaFieldsDocumentContext
     this.#model.update(model);
   }
 
+  setInheritance(id?: string) {
+    if (id) {
+      this.#model.update({
+        inheritance: {
+          id: id,
+        },
+        fields: this.#model.getValue().fields?.map((item) => ({
+          ...item,
+          useInheritedValue: true,
+        })),
+      });
+    } else {
+      this.#model.update({
+        inheritance: undefined,
+        fields: this.#model.getValue().fields?.map((item) => ({
+          ...item,
+          useInheritedValue: false,
+        })),
+      });
+    }
+  }
+
+  toggleInheritance(fieldAlias: string) {
+    const fields = this.#model.getValue().fields?.map((field) => {
+      if (field.alias == fieldAlias){
+        return {
+          ...field,
+          useInheritedValue: !field.useInheritedValue
+        }
+      }
+      return {
+        ...field
+      };
+    });
+
+    this.#model.update({
+      fields: fields,
+    });
+  }
+
   getEntityType(): string {
     return "st-metafield";
   }

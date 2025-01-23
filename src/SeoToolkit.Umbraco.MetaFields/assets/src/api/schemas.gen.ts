@@ -135,15 +135,11 @@ export const DocumentTypeSettingsContentViewModelSchema = {
 } as const;
 
 export const DocumentTypeSettingsInheritanceViewModelSchema = {
-    required: ['id'],
     type: 'object',
     properties: {
         id: {
-            type: 'integer',
-            format: 'int32'
-        },
-        name: {
             type: 'string',
+            format: 'uuid',
             nullable: true
         }
     },
