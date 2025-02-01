@@ -17,6 +17,7 @@ using SeoToolkit.Umbraco.MetaFields.Core.Services.DocumentTypeSettings;
 using Umbraco.Cms.Api.Management.Controllers;
 using SeoToolkit.Umbraco.Common.Core.Controllers;
 using Umbraco.Cms.Web.Common.Routing;
+using System;
 
 namespace SeoToolkit.Umbraco.MetaFields.Core.Controllers
 {
@@ -60,15 +61,15 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Controllers
 
         [HttpGet("metaFields")]
         [ProducesResponseType(typeof(MetaFieldsSettingsViewModel), 200)]
-        public IActionResult Get(int nodeId, string culture)
+        public IActionResult Get(Guid nodeGuid, string culture)
         {
             EnsureLanguage(culture);
 
             using var ctx = _umbracoContextFactory.EnsureUmbracoContext();
-            var content = ctx.UmbracoContext.Content.GetById(true, nodeId);
+            var content = ctx.UmbracoContext.Content.GetById(true, nodeGuid);
 
             var metaTags = content is null ? _seoService.GetEmpty() : _seoService.Get(content, false);
-            var userValues = content is null ? new Dictionary<string, object>() : _seoValueService.GetUserValues(nodeId);
+            var userValues = content is null ? new Dictionary<string, object>() : _seoValueService.GetUserValues(content.Id);
 
             return Ok(new MetaFieldsSettingsViewModel
             {
@@ -121,7 +122,12 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Controllers
                 isDirty = true;
             }
             if (isDirty)
-                _seoValueService.AddValues(postModel.NodeId, values);
+            {
+                using var ctx = _umbracoContextFactory.EnsureUmbracoContext();
+                var content = ctx.UmbracoContext.Content.GetById(true, postModel.NodeId);
+
+                _seoValueService.AddValues(content.Id, values);
+            }
 
             return Get(postModel.NodeId, postModel.Culture);
         }

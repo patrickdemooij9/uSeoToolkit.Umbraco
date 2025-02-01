@@ -102,7 +102,7 @@ export class SeoToolkitService {
 export class SeoToolkitMetaFieldsService {
     /**
      * @param data The data for the request.
-     * @param data.nodeId
+     * @param data.nodeGuid
      * @param data.culture
      * @returns unknown OK
      * @throws ApiError
@@ -112,7 +112,7 @@ export class SeoToolkitMetaFieldsService {
             method: 'GET',
             url: '/umbraco/seoToolkitMetaFields/metaFields',
             query: {
-                nodeId: data.nodeId,
+                nodeGuid: data.nodeGuid,
                 culture: data.culture
             }
         });

@@ -4,14 +4,13 @@ import { umbExtensionsRegistry } from "@umbraco-cms/backoffice/extension-registr
 import { customElement, repeat, state } from "@umbraco-cms/backoffice/external/lit";
 import { css, html, LitElement, nothing } from "lit";
 import { UmbRoute, UmbRouterSlotChangeEvent, UmbRouterSlotInitEvent } from "@umbraco-cms/backoffice/router";
-import { SeoDocumentViewManifest } from "../manifests/seoDocumentViewManifest";
-import { UMB_DOCUMENT_TYPE_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/document-type";
+import { SeoContentViewManifest } from "../manifests/seoContentViewManifest";
 
-@customElement("st-document-view")
+@customElement("st-content-view")
 export default class SeoToolkitDocumentViewElement extends UmbElementMixin(LitElement) {
 
     @state()
-	private _documentViews: Array<SeoDocumentViewManifest> = [];
+	private _contentViews: Array<SeoContentViewManifest> = [];
 
 	@state()
 	private _routes?: UmbRoute[];
@@ -22,20 +21,11 @@ export default class SeoToolkitDocumentViewElement extends UmbElementMixin(LitEl
 	@state()
 	private _activePath?: string;
 
-	@state()
-	private _showViews: boolean = true;
-
     constructor(){
         super();
 
-		this.consumeContext(UMB_DOCUMENT_TYPE_WORKSPACE_CONTEXT, (instance) => {
-			instance.isElement.subscribe((value) => {
-				this._showViews = !value;
-			})
-		});
-
-        new UmbExtensionsManifestInitializer(this, umbExtensionsRegistry, 'seoDocumentView', null, (documentViews) => {
-			this._documentViews = documentViews.map((view) => view.manifest as unknown as SeoDocumentViewManifest);
+        new UmbExtensionsManifestInitializer(this, umbExtensionsRegistry, 'seoContentView', null, (documentViews) => {
+			this._contentViews = documentViews.map((view) => view.manifest as unknown as SeoContentViewManifest);
 			this._createRoutes();
 		});
     }
@@ -43,8 +33,8 @@ export default class SeoToolkitDocumentViewElement extends UmbElementMixin(LitEl
     private _createRoutes() {
 		let newRoutes: UmbRoute[] = [];
 
-		if (this._documentViews.length > 0) {
-			newRoutes = this._documentViews.map((manifest) => {
+		if (this._contentViews.length > 0) {
+			newRoutes = this._contentViews.map((manifest) => {
 				return {
 					path: `view/${manifest.meta.pathname}`,
 					component: () => createExtensionElement(manifest),
@@ -71,11 +61,10 @@ export default class SeoToolkitDocumentViewElement extends UmbElementMixin(LitEl
     }
 
     #renderViews() {
-		if (!this._showViews) return nothing;
 		return html`
 			<uui-tab-group class="navigation">
                 ${repeat(
-                    this._documentViews,
+                    this._contentViews,
                         (view) => view.alias,
                         (view, index) =>
 							html`
@@ -94,13 +83,6 @@ export default class SeoToolkitDocumentViewElement extends UmbElementMixin(LitEl
 
     #renderRoutes() {
 		if (!this._routes || this._routes.length === 0) return nothing;
-		if (!this._showViews){
-			return html`
-				<div class="empty-state">
-					This is not applicable for element types
-				</div>
-			`
-		}
 		return html`
 			<umb-body-layout>
 				<umb-router-slot

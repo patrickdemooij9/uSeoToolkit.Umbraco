@@ -272,8 +272,8 @@ export const MetaFieldsSettingsPostViewModelSchema = {
     type: 'object',
     properties: {
         nodeId: {
-            type: 'integer',
-            format: 'int32'
+            type: 'string',
+            format: 'uuid'
         },
         contentTypeId: {
             type: 'integer',

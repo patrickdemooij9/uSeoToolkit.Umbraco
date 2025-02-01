@@ -91,7 +91,7 @@ export const ImportRedirectsFileExtension = {
 } as const;
 
 export type MetaFieldsSettingsPostViewModel = {
-    nodeId: number;
+    nodeId: string;
     contentTypeId: number;
     culture?: (string) | null;
     userValues?: {
@@ -357,7 +357,7 @@ export type GetUmbracoSeoToolkitTreeInfoRootResponse = ((PagedNamedEntityTreeIte
 
 export type GetUmbracoSeoToolkitMetaFieldsMetaFieldsData = {
     culture?: string;
-    nodeId?: number;
+    nodeGuid?: string;
 };
 
 export type GetUmbracoSeoToolkitMetaFieldsMetaFieldsResponse = ((MetaFieldsSettingsViewModel));

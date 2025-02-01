@@ -7,6 +7,7 @@ import { seoToolkitSidebar } from './sidebar/seoToolkitSidebar';
 import { TreeManifests } from './trees/seoToolkitTree';
 import { manifest } from './conditions/workspaceEntityIdCondition';
 import { Manifests as DocumentManifests } from './manifests/seoToolkitDocumentManifests';
+import { ContentViewManifests } from './manifests/seoToolkitContentManifests';
 
 export const onInit: UmbEntryPointOnInit = (host, extensionRegistry) => {
 
@@ -28,4 +29,5 @@ export const onInit: UmbEntryPointOnInit = (host, extensionRegistry) => {
 
     extensionRegistry.registerMany(TreeManifests);
     extensionRegistry.registerMany(DocumentManifests);
+    extensionRegistry.registerMany(ContentViewManifests);
 };
