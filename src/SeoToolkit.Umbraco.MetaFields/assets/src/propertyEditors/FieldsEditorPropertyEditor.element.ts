@@ -12,6 +12,7 @@ import { UMB_DOCUMENT_TYPE_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/doc
 import { UMB_MODAL_MANAGER_CONTEXT } from "@umbraco-cms/backoffice/modal";
 import { ItemGroupPickerConfig } from "../popups/ItemGroupPicker.element";
 import { UmbSorterController } from "@umbraco-cms/backoffice/sorter";
+import { UmbPropertyValueChangeEvent } from "@umbraco-cms/backoffice/property-editor";
 
 interface FieldData {
   name: string;
@@ -19,6 +20,12 @@ interface FieldData {
   onlyShowIfInherited: boolean;
   source: number;
   group: string;
+}
+
+interface FieldItem {
+  name: string;
+  value: string;
+  source: number;
 }
 
 @customElement("st-fieldseditor-propertyeditor")
@@ -30,7 +37,7 @@ export default class FieldsEditorPropertyEditor
   #sorter: UmbSorterController<string>;
 
   @property({ type: Array })
-  public value: string[] = [];
+  public value: FieldItem[] = [];
 
   @state()
   additionalFields: FieldData[] = [];
@@ -47,11 +54,15 @@ export default class FieldsEditorPropertyEditor
       getUniqueOfElement: (element) => element.dataset.sortId,
       getUniqueOfModel: (model) => model,
       onChange: (model) => {
-        this.value = model.model;
+        const fields = this.getFields();
+        this.value = model.model.map(
+          (value) => fields.find((field) => field.value === value)!
+        );
+        this.dispatchEvent(new UmbPropertyValueChangeEvent());
       },
     });
 
-    this.#sorter.setModel(this.value);
+    this.#sorter.setModel(this.value.map((item) => item.value));
 
     this.#repository = new MetaFieldsSettingsRepository(this);
 
@@ -102,12 +113,16 @@ export default class FieldsEditorPropertyEditor
           data: {
             items: this.getFields(),
           },
-          value: this.value ?? [],
+          value: this.value.map((item) => item.value) ?? [],
         }
       );
       await modal.onSubmit();
-      this.value = modal.getValue();
-      this.#sorter.setModel(this.value);
+      const fields = this.getFields();
+      this.value = modal
+        .getValue()
+        .map((value) => fields.find((field) => field.value === value)!);
+      this.#sorter.setModel(this.value.map((item) => item.value));
+      this.dispatchEvent(new UmbPropertyValueChangeEvent());
     });
   }
 
@@ -116,9 +131,9 @@ export default class FieldsEditorPropertyEditor
       <div class="field-container">
         ${repeat(
           this.value ?? [],
-          (item) => item,
+          (item) => item.value,
           (item) =>
-            html` <div data-sort-id=${item} class="field-item">${item}</div> `
+            html` <div data-sort-id=${item.value} class="field-item">${item.name}</div> `
         )}
       </div>
       <div>

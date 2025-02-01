@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using SeoToolkit.Umbraco.MetaFields.Core.Interfaces.Converters;
 using System.Linq;
+using System.Text.Json;
 
 namespace SeoToolkit.Umbraco.MetaFields.Core.Common.Converters.EditorConverters
 {
@@ -15,8 +16,15 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Common.Converters.EditorConverters
 
         public object ConvertEditorToDatabaseValue(object value)
         {
-            if (!(value is JArray array) || array.Count == 0 || array.All(it => string.IsNullOrWhiteSpace(it.ToString()))) return null;
-            return string.Join(',', array);
+            if (value is not JsonElement element || element.ValueKind != JsonValueKind.Array || element.GetArrayLength() == 0)
+            {
+                return null;
+            }
+
+            var items = element.EnumerateArray().Select(it => it).ToArray();
+            if (items.All(it => string.IsNullOrWhiteSpace(it.ToString()))) return null;
+
+            return string.Join(',', items);
         }
 
         public object ConvertObjectToEditorValue(object value)

@@ -12,18 +12,32 @@ import {
   umbExtensionsRegistry,
 } from "@umbraco-cms/backoffice/extension-registry";
 import { createExtensionElement } from "@umbraco-cms/backoffice/extension-api";
+import { UmbPropertyEditorConfigCollection, UmbPropertyValueChangeEvent } from "@umbraco-cms/backoffice/property-editor";
 
 @customElement("st-metafield-settingsfield")
 export class MetaFieldsSettingsField extends UmbElementMixin(LitElement) {
+
   @property({ type: Object })
   public set field(value: SeoFieldViewModel | undefined) {
     this._field = value;
-    this.observePropertyView();
+    if (this._element){
+      this._element.value = value?.value;
+    }
   }
   public get field() {
     return this._field;
   }
   private _field?: SeoFieldViewModel;
+
+  @property({ type: String })
+  public set view(value: string | undefined){
+    this._view = value;
+    this.observePropertyView();
+  }
+  public get view() {
+    return this._view;
+  }
+  private _view?: string;
 
   @property({ type: Boolean })
   public hasGlobalInheritance: boolean = false;
@@ -32,10 +46,14 @@ export class MetaFieldsSettingsField extends UmbElementMixin(LitElement) {
   private _element?: ManifestPropertyEditorUi["ELEMENT_TYPE"];
 
   private observePropertyView() {
+    if (!this._view) {
+      return;
+    }
+
     this.observe(
       umbExtensionsRegistry.byTypeAndAlias(
         "propertyEditorUi",
-        this.field!.editor!.view!
+        this._view
       ),
       (manifest) => {
         this._gotEditorUI(manifest);
@@ -54,8 +72,23 @@ export class MetaFieldsSettingsField extends UmbElementMixin(LitElement) {
     const el = await createExtensionElement(manifest);
     if (el) {
       this._element = el;
+      this._element.addEventListener("change", () => {
+        this._field = {
+          ...this._field!,
+          value: this._element!.value
+        };
+        this.dispatchEvent(new UmbPropertyValueChangeEvent());
+      })
 
       this._element.value = this.field?.value;
+      if (this.field?.editor?.config) {
+        this._element.config = new UmbPropertyEditorConfigCollection(
+          Object.entries(this.field?.editor?.config).map((item) => ({
+            alias: item[0],
+            value: item[1],
+          }))
+        );
+      }
     }
   }
 

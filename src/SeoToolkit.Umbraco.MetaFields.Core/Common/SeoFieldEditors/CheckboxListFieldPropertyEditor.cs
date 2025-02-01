@@ -10,10 +10,10 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Common.SeoFieldEditors
     {
         private readonly CheckboxItem[] _items;
 
-        public CheckboxListFieldPropertyEditor(CheckboxItem[] items) : base("Umb.PropertyEditorUi.CheckBoxList", new CheckboxlistConverter())
+        public CheckboxListFieldPropertyEditor(CheckboxItem[] items) : base("SeoToolkit.SelectCheckboxList", new CheckboxlistConverter())
         {
             IsPreValue = true;
-            Config.Add("prevalues", items);
+            Config.Add("items", items);
 
             _items = items;
         }

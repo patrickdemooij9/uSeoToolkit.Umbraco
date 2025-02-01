@@ -8,14 +8,11 @@ import { html, LitElement } from "lit";
 import MetaFieldsDocumentContext, {
   ST_METAFIELDS_DOCUMENT_TOKEN_CONTEXT,
 } from "./MetaFieldsDocumentContext";
-import {
-  UmbPropertyDatasetElement,
-  UmbPropertyValueData,
-} from "@umbraco-cms/backoffice/property";
 import { SeoFieldViewModel } from "../api";
 
 import "./../components/MetaFieldsSettingsField.element";
 import { UmbInputDocumentElement } from "@umbraco-cms/backoffice/document";
+import { MetaFieldsSettingsField } from "./../components/MetaFieldsSettingsField.element";
 
 @customElement("st-metafield-document-view")
 export default class MetaFieldsDocumentView extends UmbElementMixin(
@@ -27,7 +24,7 @@ export default class MetaFieldsDocumentView extends UmbElementMixin(
   _fields: SeoFieldViewModel[] = [];
 
   @state()
-  _content?: UmbPropertyValueData[] = [];
+  _inheritanceId?: string;
 
   @state()
   _hasInheritance: boolean = false;
@@ -44,12 +41,7 @@ export default class MetaFieldsDocumentView extends UmbElementMixin(
 
         this._hasInheritance = !!value.inheritance && !!value.inheritance.id;
         console.log(this._hasInheritance);
-        this._content = [
-          {
-            alias: "inheritedBy",
-            value: value.inheritance?.id,
-          },
-        ];
+        this._inheritanceId = value.inheritance?.id ?? undefined;
       });
     });
   }
@@ -60,56 +52,44 @@ export default class MetaFieldsDocumentView extends UmbElementMixin(
   }
 
   #onPropertyDataChange(e: Event) {
-    const value = (e.target as UmbPropertyDatasetElement).value;
-
-    const newValue = {} as any;
-    value.forEach((item) => {
-      const itemValue = item.value as any;
-      switch (item.alias) {
-        case "hideFromSitemap":
-          newValue[item.alias] = itemValue;
-          break;
-      }
-    });
-    this.#context?.update(newValue);
+    const field = (e.target as MetaFieldsSettingsField).field;
+    this.#context?.updateField(field!.alias!, field!.value);
   }
 
-  #onInheritanceToggle(field: SeoFieldViewModel){
+  #onInheritanceToggle(field: SeoFieldViewModel) {
     this.#context?.toggleInheritance(field.alias!);
   }
 
   render() {
     return html`
       <uui-box>
-        <umb-property-dataset
-          .value=${this._content!}
-          @change=${this.#onPropertyDataChange}
-        >
-          <umb-property-layout
-				label='Inheritance'
-				description="Control from which type this should be inherited. It'll then use the values from that type.">
-				<umb-input-document-type
-						slot="editor"
-						@change=${this.#onInheritanceSelect}
-						.selection=${[]}
-                        .max=${1}
-						.documentTypesOnly=${true}>
-          </umb-input-document-type>
-
-			  </umb-property-layout>
-          </umb-property>
-          ${repeat(
-            this._fields,
-            (field) => field.alias,
-            (field) => html`
-              <st-metafield-settingsfield
-                .field=${field}
-                .hasGlobalInheritance=${this._hasInheritance}
-                @toggle-inheritance=${() => this.#onInheritanceToggle(field)}
-              ></st-metafield-settingsfield>
-            `
-          )}
-        </umb-property-dataset>
+      <umb-property-layout
+            label="Inheritance"
+            description="Control from which type this should be inherited. It'll then use the values from that type."
+          >
+            <umb-input-document-type
+              slot="editor"
+              @change=${this.#onInheritanceSelect}
+              .selection=${[]}
+              .max=${1}
+              .documentTypesOnly=${true}
+              .value=${this._inheritanceId!}
+            >
+            </umb-input-document-type>
+          </umb-property-layout>
+        ${repeat(
+          this._fields,
+          (field) => field.alias,
+          (field) => html`
+            <st-metafield-settingsfield
+              .field=${field}
+              .view=${field.editor!.view!}
+              .hasGlobalInheritance=${this._hasInheritance}
+              @toggle-inheritance=${() => this.#onInheritanceToggle(field)}
+              @change=${this.#onPropertyDataChange}
+            ></st-metafield-settingsfield>
+          `
+        )}
       </uui-box>
     `;
   }

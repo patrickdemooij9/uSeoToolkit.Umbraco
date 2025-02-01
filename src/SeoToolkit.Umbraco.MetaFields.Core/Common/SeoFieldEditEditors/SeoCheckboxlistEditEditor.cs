@@ -17,7 +17,7 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Common.SeoFieldEditEditors
         {
             Config = new Dictionary<string, object>
             {
-                {"prevalues",  items}
+                {"items",  items}
             };
         }
     }

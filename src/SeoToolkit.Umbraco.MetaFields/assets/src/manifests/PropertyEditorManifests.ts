@@ -7,11 +7,25 @@ const fieldsEditorPropertyEditor: ManifestPropertyEditorUi = {
   element: () =>
     import("../propertyEditors/FieldsEditorPropertyEditor.element"),
   meta: {
-    label: "Suggestions",
+    label: "Fields Editor",
     icon: 'icon-code',
     group: 'common',
     propertyEditorSchemaAlias: "Umbraco.Plain.String",
   },
 };
 
-export const PropertyEditorManifests = [ fieldsEditorPropertyEditor ];
+const betterCheckboxListPropertyEditor: ManifestPropertyEditorUi = {
+  type: "propertyEditorUi",
+  alias: "SeoToolkit.SelectCheckboxList",
+  name: "SeoToolkit SelectCheckboxList",
+  element: () =>
+    import("../propertyEditors/SelectCheckboxList.element"),
+  meta: {
+    label: "SelectCheckboxList",
+    icon: 'icon-code',
+    group: 'common',
+    propertyEditorSchemaAlias: "Umbraco.CheckBoxList",
+  },
+};
+
+export const PropertyEditorManifests = [ fieldsEditorPropertyEditor, betterCheckboxListPropertyEditor ];

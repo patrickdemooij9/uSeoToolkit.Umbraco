@@ -6,9 +6,14 @@ import { UmbWorkspaceContext } from "@umbraco-cms/backoffice/workspace";
 import {
   DocumentTypeSettingsContentViewModel,
   DocumentTypeSettingsPostViewModel,
+  DocumentTypeValuePostViewModel,
 } from "../api";
 import { MetaFieldsSettingsRepository } from "../dataAccess/MetaFieldsSettingsRepository";
 import { UMB_DOCUMENT_TYPE_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/document-type";
+import {
+  UMB_ACTION_EVENT_CONTEXT,
+  UmbActionEventContext,
+} from "@umbraco-cms/backoffice/action";
 
 export default class MetaFieldsDocumentContext
   extends UmbContextBase<DocumentTypeSettingsPostViewModel>
@@ -17,9 +22,12 @@ export default class MetaFieldsDocumentContext
   workspaceAlias: string = "Umb.Workspace.DocumentType";
 
   #repository: MetaFieldsSettingsRepository;
+  #actionEventContext?: UmbActionEventContext;
 
   #model = new UmbObjectState<DocumentTypeSettingsContentViewModel>({});
   public readonly model = this.#model.asObservable();
+
+  #nodeId: string | undefined;
 
   constructor(host: UmbControllerHost) {
     super(host, ST_METAFIELDS_DOCUMENT_TOKEN_CONTEXT.toString());
@@ -28,9 +36,14 @@ export default class MetaFieldsDocumentContext
 
     this.consumeContext(UMB_DOCUMENT_TYPE_WORKSPACE_CONTEXT, (instance) => {
       instance.unique.subscribe((unique) => {
+        this.#nodeId = unique;
         this.fetchFromServer(unique!);
       });
-      this.fetchFromServer("");
+    });
+
+    this.consumeContext(UMB_ACTION_EVENT_CONTEXT, (instance) => {
+      this.#actionEventContext = instance;
+      instance.addEventListener("document.save", () => this.#save(this));
     });
   }
 
@@ -43,8 +56,54 @@ export default class MetaFieldsDocumentContext
     });
   }
 
+  destroy(): void {
+    this.#actionEventContext?.removeEventListener("document.save", () =>
+      this.#save(this)
+    );
+  }
+
+  #save(context: MetaFieldsDocumentContext) {
+    context.save();
+  }
+
+  save() {
+    const model = this.#model.getValue();
+    const fields: { [key: string]: DocumentTypeValuePostViewModel } = {};
+    model.fields?.forEach((field) => {
+      fields[field.alias!] = {
+        useInheritedValue: field.useInheritedValue,
+        value: field.value,
+      };
+    });
+    console.log(fields);
+
+    this.#repository.save({
+      nodeId: this.#nodeId!,
+      enableSeoSettings: true,
+      fields: fields,
+      inheritanceId: model.inheritance?.id,
+    });
+  }
+
   update(model: Partial<DocumentTypeSettingsContentViewModel>) {
     this.#model.update(model);
+  }
+
+  updateField(alias: string, value: any) {
+    const fields = [...this.#model.getValue().fields!];
+
+    const foundField = fields.find((item) => item.alias === alias);
+    if (!foundField) {
+      return;
+    }
+    fields[fields.indexOf(foundField)] = {
+      ...foundField,
+      value: value,
+    };
+    this.#model.update({
+      fields: fields,
+    });
+    console.log(this.#model.getValue());
   }
 
   setInheritance(id?: string) {
@@ -71,14 +130,14 @@ export default class MetaFieldsDocumentContext
 
   toggleInheritance(fieldAlias: string) {
     const fields = this.#model.getValue().fields?.map((field) => {
-      if (field.alias == fieldAlias){
+      if (field.alias == fieldAlias) {
         return {
           ...field,
-          useInheritedValue: !field.useInheritedValue
-        }
+          useInheritedValue: !field.useInheritedValue,
+        };
       }
       return {
-        ...field
+        ...field,
       };
     });
 
