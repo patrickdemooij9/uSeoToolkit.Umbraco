@@ -99,10 +99,17 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Controllers
         }
 
         [HttpPost("metaFields")]
-        [ProducesResponseType(typeof(MetaFieldsSettingsViewModel), 200)]
+        [ProducesResponseType(typeof(MetaFieldsSettingsPostViewModel), 200)]
         public IActionResult Save(MetaFieldsSettingsPostViewModel postModel)
-        {            
-            if (!_seoSettingsService.IsEnabled(postModel.ContentTypeId))
+        {
+            using var ctx = _umbracoContextFactory.EnsureUmbracoContext();
+            var content = ctx.UmbracoContext.Content.GetById(true, postModel.NodeId);
+            if (content is null)
+            {
+                return BadRequest($"Cannot find content by id: {postModel.NodeId}");
+            }
+
+            if (!_seoSettingsService.IsEnabled(content.ContentType.Id))
                 return BadRequest("SEO settings are turned off for this node!");
 
             EnsureLanguage(postModel.Culture);
@@ -123,9 +130,6 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Controllers
             }
             if (isDirty)
             {
-                using var ctx = _umbracoContextFactory.EnsureUmbracoContext();
-                var content = ctx.UmbracoContext.Content.GetById(true, postModel.NodeId);
-
                 _seoValueService.AddValues(content.Id, values);
             }
 

@@ -1,6 +1,7 @@
 import { UmbControllerBase } from "@umbraco-cms/backoffice/class-api";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { MetaFieldsContentSource } from "./MetaFieldsContentSource";
+import { MetaFieldsSettingsPostViewModel } from "../api";
 
 export class MetaFieldsContentRepository extends UmbControllerBase {
   #source: MetaFieldsContentSource;
@@ -13,5 +14,9 @@ export class MetaFieldsContentRepository extends UmbControllerBase {
 
   async get(contentGuid: string) {
     return this.#source.get(contentGuid);
+  }
+
+  async save(model: MetaFieldsSettingsPostViewModel) {
+    return this.#source.save(model);
   }
 }

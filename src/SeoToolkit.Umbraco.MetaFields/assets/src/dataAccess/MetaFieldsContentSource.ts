@@ -1,6 +1,9 @@
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { tryExecuteAndNotify } from "@umbraco-cms/backoffice/resources";
-import { SeoToolkitMetaFieldsService } from "../api";
+import {
+  MetaFieldsSettingsPostViewModel,
+  SeoToolkitMetaFieldsService,
+} from "../api";
 
 export class MetaFieldsContentSource {
   #host: UmbControllerHost;
@@ -14,6 +17,15 @@ export class MetaFieldsContentSource {
       this.#host,
       SeoToolkitMetaFieldsService.getUmbracoSeoToolkitMetaFieldsMetaFields({
         nodeGuid: contentGuid,
+      })
+    );
+  }
+
+  async save(model: MetaFieldsSettingsPostViewModel) {
+    return await tryExecuteAndNotify(
+      this.#host,
+      SeoToolkitMetaFieldsService.postUmbracoSeoToolkitMetaFieldsMetaFields({
+        requestBody: model,
       })
     );
   }

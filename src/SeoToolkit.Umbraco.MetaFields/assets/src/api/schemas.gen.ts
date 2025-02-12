@@ -268,16 +268,12 @@ export const ImportRedirectsFileExtensionSchema = {
 } as const;
 
 export const MetaFieldsSettingsPostViewModelSchema = {
-    required: ['contentTypeId', 'nodeId'],
+    required: ['nodeId'],
     type: 'object',
     properties: {
         nodeId: {
             type: 'string',
             format: 'uuid'
-        },
-        contentTypeId: {
-            type: 'integer',
-            format: 'int32'
         },
         culture: {
             type: 'string',

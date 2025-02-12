@@ -7,7 +7,7 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Common.SeoFieldEditEditors
 {
     public class SeoTextBoxEditEditor : ISeoFieldEditEditor
     {
-        public string View => "textbox";
+        public string View => "Umb.PropertyEditorUi.TextBox";
         public Dictionary<string, object> Config { get; }
         public IEditorValueConverter ValueConverter { get; }
 

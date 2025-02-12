@@ -8,7 +8,7 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Common.SeoFieldEditEditors
 {
     public class SeoDropdownEditEditor : ISeoFieldEditEditor
     {
-        public string View => "/App_Plugins/SeoToolkit/MetaFields/Interface/SeoFieldEditors/PropertyEditor/dropdownList.html";
+        public string View => "Umb.PropertyEditorUi.Dropdown";
         public Dictionary<string, object> Config { get; }
         public IEditorValueConverter ValueConverter { get; }
 

@@ -9,7 +9,7 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Common.SeoFieldEditEditors
 {
     public class SeoCheckboxlistEditEditor : ISeoFieldEditEditor
     {
-        public string View => "/App_Plugins/SeoToolkit/MetaFields/Interface/SeoFieldEditors/PropertyEditor/noSelectCheckboxList.html";
+        public string View => "SeoToolkit.SelectCheckboxList";
         public Dictionary<string, object> Config { get; }
         public IEditorValueConverter ValueConverter => new CheckboxlistConverter();
 

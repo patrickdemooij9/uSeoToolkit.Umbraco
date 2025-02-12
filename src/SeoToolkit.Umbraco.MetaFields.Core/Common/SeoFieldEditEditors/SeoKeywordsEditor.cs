@@ -7,7 +7,7 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Common.SeoFieldEditEditors
 {
     public class SeoKeywordsEditor : ISeoFieldEditEditor
     {
-        public string View => "tags";
+        public string View => "Umb.PropertyEditorUi.Tags";
         public Dictionary<string, object> Config { get; }
         public IEditorValueConverter ValueConverter { get; }
 
