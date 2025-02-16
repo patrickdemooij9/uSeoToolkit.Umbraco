@@ -4,6 +4,7 @@ import { OpenAPI } from './api';
 import { DocumentManifests } from './manifests/DocumentManifests';
 import { PropertyEditorManifests } from './manifests/PropertyEditorManifests';
 import { ModalManifests } from './manifests/ModalManifests';
+import { PreviewerManifests } from './manifests/PreviewerManifests';
 
 export const onInit: UmbEntryPointOnInit = (host, extensionRegistry) => {
 
@@ -21,4 +22,5 @@ export const onInit: UmbEntryPointOnInit = (host, extensionRegistry) => {
     extensionRegistry.registerMany(DocumentManifests);
     extensionRegistry.registerMany(PropertyEditorManifests);
     extensionRegistry.registerMany(ModalManifests);
+    extensionRegistry.registerMany(PreviewerManifests);
 };

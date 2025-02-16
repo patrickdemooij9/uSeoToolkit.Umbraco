@@ -12,6 +12,7 @@ import MetaFieldsContentContext, {
 import { MetaFieldsSettingsViewModel } from "../api";
 
 import "./../components/MetaFieldsContentField.element";
+import "./../previewers/SeoContentPreviewer.element";
 import { MetaFieldsContentField } from "./../components/MetaFieldsContentField.element";
 
 @customElement("st-metafield-content-view")
@@ -69,7 +70,11 @@ export default class MetaFieldsContentView extends UmbElementMixin(LitElement) {
                       )}
                     </div>
                     <div class="preview">
-                      <h1>Preview here</h1>
+                      <st-contentpreviewer
+                        .group=${group.alias!}
+                        .fields=${this.#getFieldsByGroup(group.alias!)}
+                      >
+                      </st-contentpreviewer>
                     </div>
                   </div>
                 </uui-box>
