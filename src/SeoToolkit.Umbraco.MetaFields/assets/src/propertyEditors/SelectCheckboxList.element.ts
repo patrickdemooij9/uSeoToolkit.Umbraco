@@ -53,7 +53,7 @@ export default class SelectCheckboxList
     if (config.getValueByAlias<boolean>("includeNone")) {
       this.list.push({
         label: "None",
-        value: undefined,
+        value: 'none',
         checked: false,
       });
     }
@@ -70,7 +70,17 @@ export default class SelectCheckboxList
   }
 
   #onChange(event: CustomEvent & { target: UmbInputCheckboxListElement }) {
-    this.value = event.target.selection;
+    let newValue = event.target.selection;
+    if (this.value && this.value.length < newValue.length && newValue.includes('none')) {
+      const newestValueAdded = newValue.find((item) => !this.value.includes(item));
+      if (newestValueAdded === 'none'){
+        newValue = ['none'];
+      }else{
+        newValue = newValue.filter((item) => item !== 'none');
+      }
+    }
+
+    this.value = newValue;
     this.dispatchEvent(new UmbPropertyValueChangeEvent());
   }
 

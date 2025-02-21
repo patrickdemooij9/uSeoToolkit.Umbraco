@@ -17,7 +17,8 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Common.SeoFieldEditEditors
         {
             Config = new Dictionary<string, object>
             {
-                {"items",  items}
+                {"items", items},
+                {"includeNone", true }
             };
         }
     }

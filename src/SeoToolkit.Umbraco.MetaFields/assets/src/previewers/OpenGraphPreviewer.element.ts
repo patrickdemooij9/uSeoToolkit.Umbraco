@@ -9,13 +9,28 @@ import { css, html, LitElement } from "lit";
 import { SeoSettingsFieldViewModel } from "../api";
 import { ISeoContentPreviewer } from "./ISeoContentPreviewer";
 
+import "@umbraco-cms/backoffice/imaging";
+import { UmbImagingRepository } from "@umbraco-cms/backoffice/imaging";
+
+interface UmbMediaPickerPropertyValueEntry {
+  mediaKey: string;
+}
+
 @customElement("st-opengraphpreviewer")
 export default class OpenGraphPreviewer
   extends UmbElementMixin(LitElement)
   implements ISeoContentPreviewer
 {
+  #imagingRepository = new UmbImagingRepository(this);
+
   @property({ type: Array })
-  public value: SeoSettingsFieldViewModel[] = [];
+  public set value(value: SeoSettingsFieldViewModel[]) {
+    this._value = value;
+    this.#generateImageUrl();
+    this.requestUpdate();
+  }
+
+  private _value: SeoSettingsFieldViewModel[] = [];
 
   @state()
   public currentTab: string = "facebook";
@@ -24,7 +39,7 @@ export default class OpenGraphPreviewer
   public imageUrl: string | undefined;
 
   public getValue(key: string) {
-    const foundItem = this.value.find((item) => item.alias === key);
+    const foundItem = this._value.find((item) => item.alias === key);
     if (!foundItem) {
       return "";
     }
@@ -33,6 +48,31 @@ export default class OpenGraphPreviewer
       return returnValue;
     }
     return foundItem.value;
+  }
+
+  async #generateImageUrl() {
+    const foundItem = this._value.find(
+      (item) => item.alias === "openGraphImage"
+    );
+    if (!foundItem) {
+      this.imageUrl = '';
+    }
+    if (foundItem?.userValue) {
+      const userValue = (
+        foundItem.userValue as UmbMediaPickerPropertyValueEntry[]
+      );
+      if (userValue.length === 0){
+        this.imageUrl = '';
+        return;
+      }
+      const { data } = await this.#imagingRepository.requestThumbnailUrls(
+        [userValue[0].mediaKey],
+        200,
+        300
+      );
+
+      this.imageUrl = data?.[0]?.url ?? "";
+    }
   }
 
   public getDomain() {
@@ -76,7 +116,7 @@ export default class OpenGraphPreviewer
               <div class="card">
                 <div
                   class="card-image"
-                  .style="background-image: url(${this.imageUrl}?width=300)"
+                  .style="background-image: url(${this.imageUrl})"
                 ></div>
                 <div class="card-text">
                   <p class="card-subtitle">${this.getDomain()}</p>
@@ -100,7 +140,7 @@ export default class OpenGraphPreviewer
               <div class="card">
                 <div
                   class="card-image"
-                  .style="background-image: url(${this.imageUrl}?width=300)"
+                  .style="background-image: url(${this.imageUrl})"
                 ></div>
                 <div class="card-text">
                   <p class="card-subtitle">${this.getDomain()}</p>
@@ -124,7 +164,7 @@ export default class OpenGraphPreviewer
               <div class="card">
                 <div
                   class="card-image"
-                  .style="background-image: url(${this.imageUrl}?width=300)"
+                  .style="background-image: url(${this.imageUrl})"
                 ></div>
                 <div class="card-text">
                   <h2 class="card-title">${this.getValue("openGraphTitle")}</h2>

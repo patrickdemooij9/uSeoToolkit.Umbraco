@@ -8,19 +8,19 @@ namespace SeoToolkit.Umbraco.MetaFields.Core.Common.SeoFieldEditEditors
 {
     public class SeoImageEditEditor : ISeoFieldEditEditor
     {
-        public string View => "mediapicker";
+        public string View => "Umb.PropertyEditorUi.MediaPicker";
         public Dictionary<string, object> Config { get; }
         public IEditorValueConverter ValueConverter { get; }
 
         public SeoImageEditEditor(IUmbracoContextFactory umbracoContextFactory)
         {
-            ValueConverter = new UmbracoMediaUdiConverter(umbracoContextFactory);
+            ValueConverter = new UmbracoMediaConverter(umbracoContextFactory);
             Config = new Dictionary<string, object>
             {
                 {"disableFolderSelect", false},
                 {"idType", "udi"},
                 {"ignoreUserStartNodes", false},
-                {"multiPicker", false},
+                {"multiple", false},
                 {"onlyImages", true}
             };
         }

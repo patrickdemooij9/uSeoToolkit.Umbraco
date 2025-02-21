@@ -16,6 +16,7 @@ import { SeoSettingsFieldViewModel } from "../api";
 
 @customElement("st-contentpreviewer")
 export default class SeoContentPreviewer extends UmbElementMixin(LitElement) {
+  
   @property({ type: String })
   public set group(value: string | undefined) {
     this._group = value;
